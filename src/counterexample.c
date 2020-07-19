@@ -1265,19 +1265,26 @@ counterexample_report_reduce_reduce (state_item_number itm1, state_item_number i
                                      FILE *out, const char *prefix)
 {
   {
-    fputs (prefix, out);
-    fputs (ngettext ("Reduce/reduce conflict on token",
-                     "Reduce/reduce conflict on tokens",
-                     bitset_count (conflict_syms)), out);
+    struct obstack obstack;
+    obstack_init (&obstack);
+    obstack_sgrow (&obstack,
+                   ngettext ("Reduce/reduce conflict on token",
+                             "Reduce/reduce conflict on tokens",
+                             bitset_count (conflict_syms)));
     bitset_iterator biter;
     state_item_number sym;
     const char *sep = " ";
     BITSET_FOR_EACH (biter, conflict_syms, sym, 0)
       {
-        fprintf (out, "%s%s", sep, symbols[sym]->tag);
+        obstack_printf (&obstack, "%s%s", sep, symbols[sym]->tag);
         sep = ", ";
       }
-    fputs (_(":\n"), out);
+    char *msg = obstack_finish0 (&obstack);
+    if (out == stderr)
+      complain (NULL, Wcounterexamples, "%s", msg);
+    else
+      fprintf (out, "%s%s%s\n", prefix, msg, _(":"));
+    obstack_free (&obstack, NULL);
   }
   // In the report, print the items.
   if (*prefix || trace_flag & trace_cex)
