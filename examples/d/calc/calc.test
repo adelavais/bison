@@ -23,4 +23,4 @@ run 0 7
 cat >input <<EOF
 1 + 2 * * 3
 EOF
-run 1 "err: syntax error, unexpected *, expecting + or - or ( or number"
+run 1 "err: 1.5-6: syntax error, unexpected *, expecting + or - or ( or number"

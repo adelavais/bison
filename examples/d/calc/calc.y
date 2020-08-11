@@ -110,7 +110,7 @@ class CalcLexer(R) : Lexer
 
   void yyerror(YYLocation loc, string s)
   {
-    stderr.write(loc, " ");
+    stderr.write(loc.toString(), ": ");
     yyerror(s);
   }
 
