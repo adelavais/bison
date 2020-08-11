@@ -26,6 +26,8 @@
   int ival;
 }
 
+%locations
+
 /* Bison Declarations */
 %token EQ     "="
        PLUS   "+"
@@ -94,6 +96,9 @@ class CalcLexer(R) : Lexer
 
   this(R r) { input = r; }
 
+  YYPosition start;
+  YYPosition end;
+
   // Should be a local in main, shared with %parse-param.
   int exit_status = 0;
 
@@ -101,6 +106,12 @@ class CalcLexer(R) : Lexer
   {
     exit_status = 1;
     stderr.writeln (s);
+  }
+
+  void yyerror(YYLocation loc, string s)
+  {
+    stderr.write(loc, " ");
+    yyerror(s);
   }
 
   YYSemanticType semanticVal_;
@@ -113,6 +124,8 @@ class CalcLexer(R) : Lexer
   int yylex ()
   {
     import std.uni : isWhite, isNumber;
+
+    location_step();
 
     // Skip initial spaces
     while (!input.empty && input.front != '\n' && isWhite (input.front))
@@ -144,6 +157,29 @@ class CalcLexer(R) : Lexer
       case '\n': return TokenKind.EOL;
       default: assert(0);
       }
+  }
+
+  YYPosition startPos()
+  {
+    return start;
+  }
+
+  YYPosition endPos()
+  {
+    return end;
+  }
+
+  void location_step()
+  {
+    if (input.empty)
+      return;
+    start = end;
+    end.column ++;
+    if (input.front == '\n')
+    {
+      end.line++;
+      end.column = 1;
+    }
   }
 }
 

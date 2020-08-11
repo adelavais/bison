@@ -13,8 +13,8 @@
 ## You should have received a copy of the GNU General Public License
 ## along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-cdir = $(docdir)/%D%
-dist_c_DATA = %D%/README.md
+ddir = $(docdir)/%D%
+dist_d_DATA = %D%/README.md
 
 include %D%/simple/local.mk
 include %D%/calc/local.mk
