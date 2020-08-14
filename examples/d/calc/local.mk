@@ -32,5 +32,5 @@ EXTRA_DIST += %D%/calc.test
 %D%/calc: %D%/calc.d
 	$(AM_V_GEN) $(DC) $(DCFLAGS) -of$@ %D%/calc.d
 
-dist_d_DATA = %D%/calc.y %D%/Makefile %D%/README.md
+dist_d_DATA = %D%/calc.y %D%/Makefile
 CLEANFILES += %D%/calc %D%/calc.[do]
