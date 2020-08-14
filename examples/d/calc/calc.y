@@ -125,28 +125,35 @@ class CalcLexer(R) : Lexer
   {
     import std.uni : isWhite, isNumber;
 
-    location_step();
-
     // Skip initial spaces
     while (!input.empty && input.front != '\n' && isWhite (input.front))
+    {
+      start = end;
+      end.column++;
       input.popFront;
+    }
 
     if (input.empty)
       return TokenKind.YYEOF;
 
     // Numbers.
     if (input.front.isNumber)
-      {
-        import std.conv : parse;
-        semanticVal_.ival = input.parse!int;
-        return TokenKind.NUM;
-      }
+    {
+      import std.conv : parse;
+      semanticVal_.ival = input.parse!int;
+      import std.conv : toChars;
+      start = end;
+      end.column += semanticVal_.ival.toChars.length;
+      return TokenKind.NUM;
+    }
 
     // Individual characters
     auto ch = input.front;
     input.popFront;
+    start = end;
+    end.column++;
     switch (ch)
-      {
+    {
       case '=':  return TokenKind.EQ;
       case '+':  return TokenKind.PLUS;
       case '-':  return TokenKind.MINUS;
@@ -154,9 +161,14 @@ class CalcLexer(R) : Lexer
       case '/':  return TokenKind.SLASH;
       case '(':  return TokenKind.LPAR;
       case ')':  return TokenKind.RPAR;
-      case '\n': return TokenKind.EOL;
-      default: assert(0);
+      case '\n': 
+      {
+        end.line++;
+        end.column = 1;
+        return TokenKind.EOL;
       }
+      default: assert(0);
+    }
   }
 
   YYPosition startPos()
@@ -167,19 +179,6 @@ class CalcLexer(R) : Lexer
   YYPosition endPos()
   {
     return end;
-  }
-
-  void location_step()
-  {
-    if (input.empty)
-      return;
-    start = end;
-    end.column ++;
-    if (input.front == '\n')
-    {
-      end.line++;
-      end.column = 1;
-    }
   }
 }
 
