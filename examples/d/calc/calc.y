@@ -22,6 +22,8 @@
 %define api.parser.class {Calc}
 %define parse.error verbose
 
+%locations
+
 %union {
   int ival;
 }
@@ -94,6 +96,9 @@ class CalcLexer(R) : Lexer
 
   this(R r) { input = r; }
 
+  YYPosition start;
+  YYPosition end;
+
   // Should be a local in main, shared with %parse-param.
   int exit_status = 0;
 
@@ -101,6 +106,12 @@ class CalcLexer(R) : Lexer
   {
     exit_status = 1;
     stderr.writeln (s);
+  }
+
+  void yyerror(YYLocation loc, string s)
+  {
+    stderr.write(loc.toString(), ": ");
+    yyerror(s);
   }
 
   YYSemanticType semanticVal_;
@@ -116,24 +127,33 @@ class CalcLexer(R) : Lexer
 
     // Skip initial spaces
     while (!input.empty && input.front != '\n' && isWhite (input.front))
+    {
+      start = end;
+      end.column++;
       input.popFront;
+    }
 
     if (input.empty)
       return TokenKind.YYEOF;
 
     // Numbers.
     if (input.front.isNumber)
-      {
-        import std.conv : parse;
-        semanticVal_.ival = input.parse!int;
-        return TokenKind.NUM;
-      }
+    {
+      import std.conv : parse;
+      semanticVal_.ival = input.parse!int;
+      import std.conv : toChars;
+      start = end;
+      end.column += semanticVal_.ival.toChars.length;
+      return TokenKind.NUM;
+    }
 
     // Individual characters
     auto ch = input.front;
     input.popFront;
+    start = end;
+    end.column++;
     switch (ch)
-      {
+    {
       case '=':  return TokenKind.EQ;
       case '+':  return TokenKind.PLUS;
       case '-':  return TokenKind.MINUS;
@@ -141,9 +161,24 @@ class CalcLexer(R) : Lexer
       case '/':  return TokenKind.SLASH;
       case '(':  return TokenKind.LPAR;
       case ')':  return TokenKind.RPAR;
-      case '\n': return TokenKind.EOL;
-      default: assert(0);
+      case '\n': 
+      {
+        end.line++;
+        end.column = 1;
+        return TokenKind.EOL;
       }
+      default: assert(0);
+    }
+  }
+
+  YYPosition startPos()
+  {
+    return start;
+  }
+
+  YYPosition endPos()
+  {
+    return end;
   }
 }
 
