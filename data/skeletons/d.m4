@@ -204,12 +204,49 @@ m4_define([b4_symbol_enum],
 # to use a signed type, which matters for yytoken.
 m4_define([b4_declare_symbol_enum],
 [[  /* Symbol kinds.  */
-  public enum SymbolKind
+  struct SymbolKind
   {
+    public enum SymbolKindEnum
+    {
     ]b4_symbol(-2, kind_base)[ = -2,  /* No symbol.  */
 ]b4_symbol_foreach([b4_symbol_enum])dnl
-[  };
-]])])
+[   }
+    private SymbolKindEnum yycode_;
+    alias SymbolKindEnum this;
+
+    this(int code)
+    {
+      yycode_ = cast(SymbolKindEnum) code;
+    }
+    
+    public void opAssign(in SymbolKindEnum code)
+    {
+      yycode_ = code;
+    }
+    
+    public bool opEquals(const int s)
+    {
+      return yycode_ == s;
+    }
+    
+    SymbolKindEnum value() const
+    {
+      return yycode_;
+    }
+    /* YYTNAME[SYMBOL-NUM] -- String name of the symbol SYMBOL-NUM.
+       First, the terminals, then, starting at \a YYNTOKENS_, nonterminals.  */
+    private static string[] yytname_ = @{
+  ]b4_tname[
+    @};
+    public string toString() const
+    {
+      return yytname_[yycode_];
+    }
+  }
+  ]])])
+    [
+  }
+  ]])])
 
 
 
