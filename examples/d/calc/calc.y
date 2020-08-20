@@ -139,11 +139,16 @@ class CalcLexer(R) : Lexer
     // Numbers.
     if (input.front.isNumber)
     {
-      import std.conv : parse;
-      semanticVal_.ival = input.parse!int;
-      import std.conv : toChars;
+      int lengthChars = 0;
+      import std.format : format;
+      import core.stdc.stdlib : abort;
+      import core.stdc.stdio : sscanf;
+      if (sscanf (cast(char*) format!"%s\0"(input), "%d%n", &semanticVal_.ival, &lengthChars) != 1)
+        abort ();
+      foreach (_; 0..lengthChars)
+        input.popFront;
       start = end;
-      end.column += semanticVal_.ival.toChars.length;
+      end.column += lengthChars;
       return TokenKind.NUM;
     }
 
