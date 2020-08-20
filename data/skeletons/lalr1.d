@@ -525,7 +525,7 @@ m4_popdef([b4_at_dollar])])dnl
         {
           /* If the proper action on seeing token YYTOKEN is to reduce or to
              detect an error, take that action.  */
-          yyn += yytoken;
+          yyn += yytoken.value;
           if (yyn < 0 || yylast_ < yyn || yycheck_[yyn] != yytoken)
             label = YYDEFAULT;
 
@@ -732,7 +732,7 @@ m4_popdef([b4_at_dollar])])dnl
       // FIXME: This method of building the message is not compatible
       // with internationalization.
       string res = "syntax error, unexpected ";
-      res ~= yytnamerr_ (yytname_[tok]);
+      res ~= yytnamerr_ (tok.toString);
       int yyn = yypact_[yystate];
       if (!yy_pact_value_is_default_ (yyn))
       {
@@ -757,7 +757,8 @@ m4_popdef([b4_at_dollar])])dnl
                    && !yy_table_value_is_error_ (yytable_[x + yyn]))
                {
                   res ~= count++ == 0 ? ", expecting " : " or ";
-                  res ~= yytnamerr_ (yytname_[x]);
+                  SymbolKind t = x;
+                  res ~= yytnamerr_ (t.toString);
                }
           }
       }
@@ -795,13 +796,6 @@ m4_popdef([b4_at_dollar])])dnl
 
   ]b4_parser_tables_define[
 
-  /* YYTNAME[SYMBOL-NUM] -- String name of the symbol SYMBOL-NUM.
-     First, the terminals, then, starting at \a yyntokens_, nonterminals.  */
-  private static immutable string[] yytname_ =
-  @{
-  ]b4_tname[
-  @};
-
 ]b4_parse_trace_if([[
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
   private static immutable ]b4_int_type_for([b4_rline])[[] yyrline_ =
@@ -831,7 +825,7 @@ m4_popdef([b4_at_dollar])])dnl
   }
 ]])[
 
-  private static SymbolKind yytranslate_ (int t)
+  private static auto yytranslate_ (int t)
   {
 ]b4_api_token_raw_if(
 [[    import std.conv : to;
@@ -848,10 +842,10 @@ m4_popdef([b4_at_dollar])])dnl
     if (t <= 0)
       return ]b4_symbol(0, kind)[;
     else if (t <= code_max)
-      {
-        import std.conv : to;
-        return to!SymbolKind (translate_table[t]);
-      }
+    {
+      SymbolKind x = translate_table[t];
+      return x.value;
+    }
     else
       return ]b4_symbol(2, kind)[;]])[
   }

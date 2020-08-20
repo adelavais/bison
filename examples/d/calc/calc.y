@@ -141,10 +141,21 @@ class CalcLexer(R) : Lexer
     {
       import std.conv : parse;
       semanticVal_.ival = input.parse!int;
-      import std.conv : toChars;
       start = end;
+      import std.conv : toChars;
       end.column += semanticVal_.ival.toChars.length;
       return TokenKind.NUM;
+
+      /*
+      
+      int nchars = 0;
+        if (sscanf (*line - 1, "%lf%n", &yylval->TOK_NUM, &nchars) != 1)
+          abort ();
+        *line += nchars - 1;
+        yylloc->last_column += nchars - 1;
+        return TOK_NUM;
+      
+      */
     }
 
     // Individual characters
