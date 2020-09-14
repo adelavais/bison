@@ -299,7 +299,7 @@ class CalcLexer(R) : Lexer
     return res;
   }
 
-  int yylex ()
+  TokenKind yylex ()
   {]AT_LOCATION_IF([[
     location.begin = location.end;]])[
 
@@ -342,7 +342,20 @@ class CalcLexer(R) : Lexer
         return TokenKind.YYerror;
       }
 
-    return c;
+    switch (c)
+    {
+      case '+':  return TokenKind.PLUS;
+      case '-':  return TokenKind.MINUS;
+      case '*':  return TokenKind.STAR;
+      case '/':  return TokenKind.SLASH;
+      case '(':  return TokenKind.LPAR;
+      case ')':  return TokenKind.RPAR;
+      case '\n': return TokenKind.EOL;
+      case '=':  return TokenKind.EQUAL;
+      case '^':  return TokenKind.POW;
+      case '!':  return TokenKind.NOT;
+      default:   return TokenKind.YYUNDEF;
+    }
   }
 }
 ]])
@@ -550,7 +563,56 @@ void location_print (FILE *o, Span s);
 %token CALC_EOF 0 ]AT_TOKEN_TRANSLATE_IF([_("end of input")], ["end of input"])[
 %token <ival> NUM   "number"
 %type  <ival> exp
+]AT_LANG_MATCH([d], [[
+%token PLUS   "+"
+       MINUS  "-"
+       STAR   "*"
+       SLASH  "/"
+       LPAR   "("
+       RPAR   ")"
+       EQUAL  "="
+       POW    "^"
+       NOT    "!"
+       EOL    "end of line"
 
+%nonassoc "="   /* comparison          */
+%left "-" "+"
+%left "*" "/"
+%precedence NEG /* negation--unary minus */
+%right "^"      /* exponentiation        */
+
+/* Grammar follows */
+%%
+input:
+  line
+| input line         { ]AT_PARAM_IF([++*count; ++global_count;])[ }
+;
+
+line:
+  EOL
+| exp EOL           { ]AT_PARAM_IF([*result = global_result = $1;])[ }
+;
+
+exp:
+  NUM
+| exp "=" exp
+  {
+    if ($1 != $3)
+      yyerror (]AT_LOCATION_IF([[@$, ]])[format ("calc: error: %d != %d", $1, $3));
+    $$ = $1;
+  }
+| exp "+" exp        { $$ = $1 + $3; }
+| exp "-" exp        { $$ = $1 - $3; }
+| exp "*" exp        { $$ = $1 * $3; }
+| exp "/" exp        { $$ = $1 / $3; }
+| "-" exp  %prec NEG { $$ = -$2; }
+| exp "^" exp        { $$ = power ($1, $3); }
+| "(" exp ")"        { $$ = $2; }
+| "(" error ")"      { $$ = 1111; }
+| "!"                { $$ = 0; return YYERROR; }
+| "-" error          { $$ = 0; return YYERROR; }
+;
+]])[]AT_LANG_MATCH([c\|c++], [[
 %nonassoc '='   /* comparison          */
 %left '-' '+'
 %left '*' '/'
@@ -592,9 +654,7 @@ exp:
         char buf[1024];
         snprintf (buf, sizeof buf, "calc: error: %d != %d", $1, $3);
         ]AT_GLR_IF([[yyparser.]])[error (]AT_LOCATION_IF([[@$, ]])[buf);
-      }]],
-      [d], [[
-      yyerror (]AT_LOCATION_IF([[@$, ]])[format ("calc: error: %d != %d", $1, $3));]])[
+      }]])[
     $$ = $1;
   }
 | exp '+' exp        { $$ = $1 + $3; }
@@ -604,10 +664,11 @@ exp:
 | '-' exp  %prec NEG { $$ = -$2; }
 | exp '^' exp        { $$ = power ($1, $3); }
 | '(' exp ')'        { $$ = $2; }
-| '(' error ')'      { $$ = 1111; ]AT_D_IF([], [yyerrok;])[ }
-| '!'                { $$ = 0; ]AT_D_IF([return YYERROR], [YYERROR])[; }
-| '-' error          { $$ = 0; ]AT_D_IF([return YYERROR], [YYERROR])[; }
+| '(' error ')'      { $$ = 1111; yyerrok; }
+| '!'                { $$ = 0; YYERROR; }
+| '-' error          { $$ = 0; YYERROR; }
 ;
+]])[
 %%
 
 int
