@@ -1013,7 +1013,8 @@ _AT_CHECK_CALC([$1],
 _AT_CHECK_CALC_ERROR([$1], [1], [1 2],
                      [[final: 0 0 1]],
                      [15],
-                     [AT_JAVA_IF([1.3-1.4], [1.3])[: syntax error on token [number] (expected: ['='] ['-'] ['+'] ['*'] ['/'] ['^'] ['\n'])]])
+                     [AT_JAVA_IF([1.3-1.4], [1.3])AT_D_IF([[: syntax error on token [number] (expected: [=] [-] [+] [*] [/] [^] [\n])]],
+                                                          [[: syntax error on token [number] (expected: ['='] ['-'] ['+'] ['*'] ['/'] ['^'] ['\n'])]])])
 _AT_CHECK_CALC_ERROR([$1], [1], [1//2],
                      [[final: 0 0 1]],
                      [20],
@@ -1022,7 +1023,8 @@ _AT_CHECK_CALC_ERROR([$1], [1], [1//2],
 _AT_CHECK_CALC_ERROR([$1], [1], [error],
                      [[final: 0 0 1]],
                      [5],
-                     [AT_JAVA_IF([1.1-1.2], [1.1])[: syntax error on token [invalid token] (expected: [number] ['-'] ['\n'] ['('] ['!'])]])
+                     [AT_JAVA_IF([1.1-1.2], [1.1])AT_D_IF([[: syntax error on token [invalid token] (expected: [number] [-] [\n] [(] [!])]],
+                                                          [[: syntax error on token [invalid token] (expected: [number] ['-'] ['\n'] ['('] ['!'])]])])
 _AT_CHECK_CALC_ERROR([$1], [1], [1 = 2 = 3],
                      [[final: 0 0 1]],
                      [30],
@@ -1042,7 +1044,8 @@ _AT_CHECK_CALC_ERROR([$1], [1],
 _AT_CHECK_CALC_ERROR([$1], [1], [/dev/null],
                      [[final: 0 0 1]],
                      [4],
-                     [[1.1: syntax error on token ]AT_TOKEN_TRANSLATE_IF([[[end of file]]], [[[end of input]]])[ (expected: [number] ['-'] ['\n'] ['('] ['!'])]])
+                     [[1.1: syntax error on token ]AT_TOKEN_TRANSLATE_IF([[[end of file]]], [[[end of input]]])AT_D_IF([[ (expected: [number] [-] [\n] [(] [!])]],
+                                                                                                                       [[ (expected: [number] ['-'] ['\n'] ['('] ['!'])]])])
 
 # Exercise the error token: without it, we die at the first error,
 # hence be sure to
@@ -1086,18 +1089,23 @@ _AT_CHECK_CALC_ERROR([$1], [0], [(!) + (1 2) = 1],
 _AT_CHECK_CALC_ERROR([$1], [0], [(- *) + (1 2) = 1],
                      [[final: 2222 0 3]],
                      [113],
-[AT_JAVA_IF([1.4-1.5], [1.4])[: syntax error on token ['*'] (expected: [number] ['-'] ['('] ['!'])
-]AT_JAVA_IF([1.12-1.13], [1.12])[: syntax error on token [number] (expected: ['='] ['-'] ['+'] ['*'] ['/'] ['^'] [')'])
-]AT_JAVA_IF([1.1-1.18], [1.1-17])[: calc: error: 2222 != 1]])
+[AT_JAVA_IF([1.4-1.5], [1.4])AT_D_IF([[: syntax error on token [*] (expected: [number] [-] [(] [!])
+]],                                  [[: syntax error on token ['*'] (expected: [number] ['-'] ['('] ['!'])
+]])AT_JAVA_IF([1.12-1.13], [1.12])AT_D_IF([[: syntax error on token [number] (expected: ['='] ['-'] ['+'] ['*'] ['/'] ['^'] [')'])
+]],                                  [[: syntax error on token [number] (expected: ['='] ['-'] ['+'] ['*'] ['/'] ['^'] [')'])
+]])AT_JAVA_IF([1.1-1.18], [1.1-17])[: calc: error: 2222 != 1]])
 
 # Check that yyerrok works properly: second error is not reported,
 # third and fourth are.  Parse status is successful.
 _AT_CHECK_CALC_ERROR([$1], [0], [(* *) + (*) + (*)],
                      [[final: 3333 0 3]],
                      [113],
-[AT_JAVA_IF([1.2-1.3], [1.2])[: syntax error on token ['*'] (expected: [number] ['-'] ['('] ['!'])
-]AT_JAVA_IF([1.10-1.11], [1.10])[: syntax error on token ['*'] (expected: [number] ['-'] ['('] ['!'])
-]AT_JAVA_IF([1.16-1.17], [1.16])[: syntax error on token ['*'] (expected: [number] ['-'] ['('] ['!'])]])
+[AT_JAVA_IF([1.2-1.3], [1.2])AT_D_IF([[: syntax error on token [*] (expected: [number] [-] [(] [!])
+]],                                  [[: syntax error on token ['*'] (expected: [number] ['-'] ['('] ['!'])
+]])AT_JAVA_IF([1.10-1.11], [1.10])AT_D_IF([[: syntax error on token [*] (expected: [number] [-] [(] [!])
+]],                                       [[: syntax error on token ['*'] (expected: [number] ['-'] ['('] ['!'])
+]])AT_JAVA_IF([1.16-1.17], [1.16])AT_D_IF([[: syntax error on token [*] (expected: [number] [-] [(] [!])]],
+                                          [[: syntax error on token ['*'] (expected: [number] ['-'] ['('] ['!'])]])])
 
 
 # YYerror.
