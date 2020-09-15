@@ -1017,7 +1017,8 @@ _AT_CHECK_CALC_ERROR([$1], [1], [1 2],
 _AT_CHECK_CALC_ERROR([$1], [1], [1//2],
                      [[final: 0 0 1]],
                      [20],
-                     [AT_JAVA_IF([1.3-1.4], [1.3])[: syntax error on token ['/'] (expected: [number] ['-'] ['('] ['!'])]])
+                     [AT_JAVA_IF([1.3-1.4], [1.3])AT_D_IF([[: syntax error on token [/] (expected: [number] [-] [(] [!])]],
+                                                          [[: syntax error on token ['/'] (expected: [number] ['-'] ['('] ['!'])]])])
 _AT_CHECK_CALC_ERROR([$1], [1], [error],
                      [[final: 0 0 1]],
                      [5],
@@ -1026,14 +1027,17 @@ _AT_CHECK_CALC_ERROR([$1], [1], [1 = 2 = 3],
                      [[final: 0 0 1]],
                      [30],
                      [AT_LAC_IF(
-                       [AT_JAVA_IF([1.7-1.8], [1.7])[: syntax error on token ['='] (expected: ['-'] ['+'] ['*'] ['/'] ['^'] ['\n'])]],
-                       [AT_JAVA_IF([1.7-1.8], [1.7])[: syntax error on token ['='] (expected: ['-'] ['+'] ['*'] ['/'] ['^'])]])])
+                       [AT_JAVA_IF([1.7-1.8], [1.7])AT_D_IF([[: syntax error on token [=] (expected: [-] [+] [*] [/] [^] [\n])]],
+                                                            [[: syntax error on token ['='] (expected: ['-'] ['+'] ['*'] ['/'] ['^'] ['\n'])]])],
+                       [AT_JAVA_IF([1.7-1.8], [1.7])AT_D_IF([[: syntax error on token [=] (expected: [-] [+] [*] [/] [^])]],
+                                                            [[: syntax error on token ['='] (expected: ['-'] ['+'] ['*'] ['/'] ['^'])]])])])
 _AT_CHECK_CALC_ERROR([$1], [1],
                      [
 +1],
                      [[final: 0 0 1]],
                      [20],
-                     [AT_JAVA_IF([2.1-2.2], [2.1])[: syntax error on token ['+'] (expected: ]AT_TOKEN_TRANSLATE_IF([[[end of file]]], [[[end of input]]])[ [number] ['-'] ['\n'] ['('] ['!'])]])
+                     [AT_JAVA_IF([2.1-2.2], [2.1])AT_D_IF([[: syntax error on token [+] (expected: ]AT_TOKEN_TRANSLATE_IF([[[end of file]]], [[[end of input]]])[ [number] [-] [\n] [(] [!])]],
+                                                          [[: syntax error on token ['+'] (expected: ]AT_TOKEN_TRANSLATE_IF([[[end of file]]], [[[end of input]]])[ [number] ['-'] ['\n'] ['('] ['!'])]])])
 # Exercise error messages with EOF: work on an empty file.
 _AT_CHECK_CALC_ERROR([$1], [1], [/dev/null],
                      [[final: 0 0 1]],
@@ -1060,19 +1064,24 @@ _AT_CHECK_CALC_ERROR([$1], [0],
                      [() + (1 + 1 + 1 +) + (* * *) + (1 * 2 * *) = 1],
                      [[final: 4444 0 5]],
                      [250],
-[AT_JAVA_IF([1.2-1.3], [1.2])[: syntax error on token [')'] (expected: [number] ['-'] ['('] ['!'])
-]AT_JAVA_IF([1.18-1.19], [1.18])[: syntax error on token [')'] (expected: [number] ['-'] ['('] ['!'])
-]AT_JAVA_IF([1.23-1.24], [1.23])[: syntax error on token ['*'] (expected: [number] ['-'] ['('] ['!'])
-]AT_JAVA_IF([1.41-1.42], [1.41])[: syntax error on token ['*'] (expected: [number] ['-'] ['('] ['!'])
-]AT_JAVA_IF([1.1-1.47], [1.1-46])[: calc: error: 4444 != 1]])
+[AT_JAVA_IF([1.2-1.3], [1.2])AT_D_IF([[: syntax error on token [)] (expected: [number] [-] [(] [!])
+]],                                   [[: syntax error on token [')'] (expected: [number] ['-'] ['('] ['!'])
+]])AT_JAVA_IF([1.18-1.19], [1.18])AT_D_IF([[: syntax error on token [)] (expected: [number] [-] [(] [!])
+]],                                       [[: syntax error on token [')'] (expected: [number] ['-'] ['('] ['!'])
+]])AT_JAVA_IF([1.23-1.24], [1.23])AT_D_IF([[: syntax error on token [*] (expected: [number] [-] [(] [!])
+]],                                       [[: syntax error on token ['*'] (expected: [number] ['-'] ['('] ['!'])
+]])AT_JAVA_IF([1.41-1.42], [1.41])AT_D_IF([[: syntax error on token [*] (expected: [number] [-] [(] [!])
+]],                                       [[: syntax error on token ['*'] (expected: [number] ['-'] ['('] ['!'])
+]])AT_JAVA_IF([1.1-1.47], [1.1-46])[: calc: error: 4444 != 1]])
 
 # The same, but this time exercising explicitly triggered syntax errors.
 # POSIX says the lookahead causing the error should not be discarded.
 _AT_CHECK_CALC_ERROR([$1], [0], [(!) + (1 2) = 1],
                      [[final: 2222 0 2]],
                      [102],
-[AT_JAVA_IF([1.10-1.11], [1.10])[: syntax error on token [number] (expected: ['='] ['-'] ['+'] ['*'] ['/'] ['^'] [')'])
-]AT_JAVA_IF([1.1-1.16], [1.1-15])[: calc: error: 2222 != 1]])
+[AT_JAVA_IF([1.10-1.11], [1.10])AT_D_IF([[: syntax error on token [number] (expected: [=] [-] [+] [*] [/] [^] [)])
+]],                                     [[: syntax error on token [number] (expected: ['='] ['-'] ['+'] ['*'] ['/'] ['^'] [')'])
+]])AT_JAVA_IF([1.1-1.16], [1.1-15])[: calc: error: 2222 != 1]])
 
 _AT_CHECK_CALC_ERROR([$1], [0], [(- *) + (1 2) = 1],
                      [[final: 2222 0 3]],
