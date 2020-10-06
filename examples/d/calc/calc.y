@@ -21,6 +21,7 @@
 
 %define api.parser.class {Calc}
 %define parse.error verbose
+%define parse.lac full
 
 %locations
 
