@@ -19,8 +19,8 @@
 
 %language "D"
 
-%define api.parser.class {Calc}
 %define parse.error verbose
+%define api.prefix {AA}
 
 %locations
 
@@ -95,21 +95,21 @@ class CalcLexer(R) : Lexer
 
   this(R r) { input = r; }
 
-  YYPosition start;
-  YYPosition end;
+  AAPosition start;
+  AAPosition end;
 
   // Should be a local in main, shared with %parse-param.
   int exit_status = 0;
 
-  void yyerror(YYLocation loc, string s)
+  void yyerror(AALocation loc, string s)
   {
     exit_status = 1;
     stderr.writeln(loc.toString(), ": ", s);
   }
 
-  YYSemanticType semanticVal_;
+  AASemanticType semanticVal_;
 
-  public final @property YYSemanticType semanticVal ()
+  public final @property AASemanticType semanticVal ()
   {
     return semanticVal_;
   }
@@ -169,12 +169,12 @@ class CalcLexer(R) : Lexer
     }
   }
 
-  YYPosition startPos() const
+  AAPosition startPos() const
   {
     return start;
   }
 
-  YYPosition endPos() const
+  AAPosition endPos() const
   {
     return end;
   }
@@ -183,7 +183,7 @@ class CalcLexer(R) : Lexer
 int main ()
 {
   auto l = calcLexer (stdin);
-  auto p = new Calc (l);
+  auto p = new AAParser (l);
   p.parse ();
   return l.exit_status;
 }

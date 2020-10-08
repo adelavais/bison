@@ -176,12 +176,12 @@ public class ]b4_location_type[
 
 private immutable bool yy_location_is_class = true;
 
-]])])m4_ifdef([b4_user_union_members], [private union YYSemanticType
+]])])m4_ifdef([b4_user_union_members], [private union ]b4_yystype[
 {
 b4_user_union_members
 };],
 [m4_if(b4_tag_seen_flag, 0,
-[[private alias int YYSemanticType;]])])[
+[[private alias int ]b4_yystype[;]])])[
 ]b4_token_enums[
 ]b4_parser_class_declaration[
 {
@@ -304,7 +304,7 @@ b4_user_union_members
   private static immutable int YYERRLAB1 = 7;
   private static immutable int YYRETURN = 8;
 ]b4_locations_if([
-  private static immutable YYSemanticType yy_semantic_null;])[
+  private static immutable ]b4_yystype[ yy_semantic_null;])[
   private int yyerrstatus_ = 0;
 
   /**

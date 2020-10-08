@@ -299,20 +299,27 @@ $2
 ## Default values.  ##
 ## ---------------- ##
 
+b4_percent_define_default([[stype]], [b4_prefix[]SemanticType])
 m4_define([b4_yystype], [b4_percent_define_get([[stype]])])
-b4_percent_define_default([[stype]], [[YYSemanticType]])])
+
+# b4_api_prefix, b4_api_PREFIX
+# ----------------------------
+# Corresponds to %define api.prefix
+b4_percent_define_default([[api.prefix]], [[YY]])
+m4_define([b4_api_prefix], [b4_percent_define_get([[api.prefix]])])
+m4_define([b4_api_PREFIX], [m4_toupper(b4_api_prefix)])
 
 # %name-prefix
-m4_define_default([b4_prefix], [[YY]])
+m4_define_default([b4_prefix], [b4_api_prefix])
 
-b4_percent_define_default([[api.parser.class]], [b4_prefix[]Parser])])
+b4_percent_define_default([[api.parser.class]], [b4_prefix[]Parser])
 m4_define([b4_parser_class], [b4_percent_define_get([[api.parser.class]])])
 
 #b4_percent_define_default([[location_type]], [Location])])
-m4_define([b4_location_type], b4_percent_define_ifdef([[location_type]],[b4_percent_define_get([[location_type]])],[YYLocation]))
+m4_define([b4_location_type], b4_percent_define_ifdef([[location_type]],[b4_percent_define_get([[location_type]])],[b4_prefix[]Location]))
 
 #b4_percent_define_default([[position_type]], [Position])])
-m4_define([b4_position_type], b4_percent_define_ifdef([[position_type]],[b4_percent_define_get([[position_type]])],[YYPosition]))
+m4_define([b4_position_type], b4_percent_define_ifdef([[position_type]],[b4_percent_define_get([[position_type]])],[b4_prefix[]Position]))
 
 
 ## ----------------- ##
