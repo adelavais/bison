@@ -21,11 +21,14 @@
 
 %define api.parser.class {Calc}
 %define parse.error verbose
+%define parse.trace
+%define api.token.constructor
 
 %locations
 
 %union {
   int ival;
+  string sval;
 }
 
 /* Bison Declarations */
@@ -114,7 +117,7 @@ class CalcLexer(R) : Lexer
     return semanticVal_;
   }
 
-  TokenKind yylex ()
+  Calc.Symbol yylex ()
   {
     import std.uni : isWhite, isNumber;
 
@@ -127,7 +130,7 @@ class CalcLexer(R) : Lexer
     }
 
     if (input.empty)
-      return TokenKind.YYEOF;
+      return Calc.Symbol(TokenKind.YYEOF, new YYLocation(startPos, endPos));
 
     // Numbers.
     if (input.front.isNumber)
@@ -143,7 +146,7 @@ class CalcLexer(R) : Lexer
       }
       start = end;
       end.column += lenChars;
-      return TokenKind.NUM;
+      return Calc.Symbol(TokenKind.NUM, semanticVal_.ival, new YYLocation(startPos, endPos));
     }
 
     // Individual characters
@@ -153,17 +156,17 @@ class CalcLexer(R) : Lexer
     end.column++;
     switch (ch)
     {
-      case '+':  return TokenKind.PLUS;
-      case '-':  return TokenKind.MINUS;
-      case '*':  return TokenKind.STAR;
-      case '/':  return TokenKind.SLASH;
-      case '(':  return TokenKind.LPAR;
-      case ')':  return TokenKind.RPAR;
+      case '+':  return Calc.Symbol(TokenKind.PLUS, new YYLocation(startPos, endPos));
+      case '-':  return Calc.Symbol(TokenKind.MINUS, new YYLocation(startPos, endPos));
+      case '*':  return Calc.Symbol(TokenKind.STAR, new YYLocation(startPos, endPos));
+      case '/':  return Calc.Symbol(TokenKind.SLASH, new YYLocation(startPos, endPos));
+      case '(':  return Calc.Symbol(TokenKind.LPAR, new YYLocation(startPos, endPos));
+      case ')':  return Calc.Symbol(TokenKind.RPAR, new YYLocation(startPos, endPos));
       case '\n':
       {
         end.line++;
         end.column = 1;
-        return TokenKind.EOL;
+        return Calc.Symbol(TokenKind.EOL, new YYLocation(startPos, endPos));
       }
       default: assert(0);
     }
@@ -184,6 +187,7 @@ int main ()
 {
   auto l = calcLexer (stdin);
   auto p = new Calc (l);
+  //p.setDebugLevel(1);
   p.parse ();
   return l.exit_status;
 }

@@ -56,7 +56,6 @@ public interface Lexer
    * Method to retrieve the ending position of the last scanned token.
    * @@return the first position beyond the last scanned token.  */
   ]b4_position_type[ endPos ();
-
 ]])[
   /**
    * Method to retrieve the semantic value of the last scanned token.
@@ -68,7 +67,8 @@ public interface Lexer
    * to the next token and prepares to return the semantic value
    * ]b4_locations_if([and beginning/ending positions ])[of the token.
    * @@return the token identifier corresponding to the next token. */
-  TokenKind yylex ();
+  ]b4_token_ctor_if([b4_parser_class[.Symbol yylex();]],
+  [[TokenKind yylex ();]])[
 
   /**
    * Entry point for error reporting.  Emits an error
@@ -272,7 +272,7 @@ b4_user_union_members
       yyDebugStream.writeln (s);
   }
 ]])[
-  private final TokenKind yylex () {
+  private final ]b4_token_ctor_if([b4_parser_class[.Symbol]], [[TokenKind]])[ yylex () {
     return yylexer.yylex ();
   }
 
@@ -383,7 +383,9 @@ b4_locations_if([, ref ]b4_location_type[ yylocationp])[)
       yycdebugln (message);
     }
   }
-]])[
+]])
+b4_symbol_type_define
+[
   /**
    * Parse input from the scanner that was specified at object construction
    * time.  Return whether the end of the input was reached successfully.
@@ -462,17 +464,28 @@ m4_popdef([b4_at_dollar])])dnl
         if (yychar == TokenKind.]b4_symbol(empty, id)[)
         {]b4_parse_trace_if([[
           yycdebugln ("Reading a token");]])[
-          yychar = yylex ();]b4_locations_if([[
+          ]b4_token_ctor_if(
+          [[
+          Symbol symbol = yylex();
+          //writeln(symbol);
+          ]b4_locations_if([[yylloc = symbol.getLocation();]])[
+          //yylval = yylexer.semanticVal;
+          yylval = symbol.getSemanticValue();
+          yychar = symbol.getToken();
+          ]], [[
+            yychar = yylex ();]b4_locations_if([[
           static if (yy_location_is_class) {
             yylloc = new ]b4_location_type[(yylexer.startPos, yylexer.endPos);
           } else {
             yylloc = ]b4_location_type[(yylexer.startPos, yylexer.endPos);
-          }]])
-          yylval = yylexer.semanticVal;[
-        }
+          }]])[
+          yylval = yylexer.semanticVal;
+          ]]
 
+          )[
+        }
         /* Convert token to internal form.  */
-        yytoken = yytranslate_ (yychar);]b4_parse_trace_if([[
+        yytoken =(yychar);]b4_parse_trace_if([[
         yy_symbol_print ("Next token is", yytoken, yylval]b4_locations_if([, yylloc])[);]])[
 
         if (yytoken == ]b4_symbol(1, kind)[)
