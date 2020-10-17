@@ -480,19 +480,10 @@ m4_define([b4_symbol_type_define],
         b4_locations_if([location = loc;])[
       }
     }
-    /*
-    this(TokenKind token, ]b4_yystype[ val]b4_locations_if([[, YYLocation loc]])[)
-    {
-      kind = yytranslate_(token);
-      value = val;]
-      b4_locations_if([location = loc;])[
-    }
-    */
-    ]b4_locations_if([[YYLocation getLocation() {return location;}]])[
-    SymbolKind getToken() {return kind;}
-    ]b4_yystype[ getSemanticValue() {return value;}
+
+    SymbolKind getToken() { return kind; }
+    ]b4_yystype[ getSemanticValue() { return value; }
+    ]b4_locations_if([[YYLocation getLocation() { return location; }]])[
   }
   ])
 ])
-
-# adela todo ]b4_locations_if([])[
