@@ -472,17 +472,13 @@ m4_popdef([b4_at_dollar])])dnl
           //yylval = yylexer.semanticVal;
           yylval = symbol.getSemanticValue();
           yychar = symbol.getToken();
-          ]], [[
-            yychar = yylex ();]b4_locations_if([[
+          ]], [[yychar = yylex ();]b4_locations_if([[
           static if (yy_location_is_class) {
             yylloc = new ]b4_location_type[(yylexer.startPos, yylexer.endPos);
           } else {
             yylloc = ]b4_location_type[(yylexer.startPos, yylexer.endPos);
           }]])[
-          yylval = yylexer.semanticVal;
-          ]]
-
-          )[
+          yylval = yylexer.semanticVal;]])[
         }
         /* Convert token to internal form.  */
         yytoken =(yychar);]b4_parse_trace_if([[
