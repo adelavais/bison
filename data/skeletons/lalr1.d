@@ -452,7 +452,7 @@ m4_popdef([b4_at_dollar])])dnl
 
         /* Take a decision.  First try without lookahead.  */
         yyn = yypact_[yystate];
-        if (yy_pact_value_is_default_ (yyn))
+        if (yyPactValueIsDefault(yyn))
         {
           label = YYDEFAULT;
           break;
@@ -497,7 +497,7 @@ m4_popdef([b4_at_dollar])])dnl
           /* <= 0 means reduce or error.  */
           else if ((yyn = yytable_[yyn]) <= 0)
           {
-            if (yy_table_value_is_error_ (yyn))
+            if (yyTableValueIsError(yyn))
               label = YYERRLAB;
             else
             {
@@ -555,6 +555,10 @@ m4_popdef([b4_at_dollar])])dnl
           ++yynerrs_;
           if (yychar == TokenKind.]b4_symbol(empty, id)[)
             yytoken = ]b4_symbol(empty, kind)[;
+          /*SymbolKind[] yyarg = new SymbolKind[5];
+          auto ctx = new Context(yystack, yytoken, yyloc);
+          writeln(ctx.getExpectedTokens(yyarg, 0, 5));
+          writeln(yyarg);*/
           yyerror (]b4_locations_if([yylloc, ])[yysyntax_error (yystate, yytoken));
         }
 ]b4_locations_if([
@@ -602,7 +606,7 @@ m4_popdef([b4_at_dollar])])dnl
         for (;;)
         {
           yyn = yypact_[yystate];
-          if (!yy_pact_value_is_default_ (yyn))
+          if (!yyPactValueIsDefault(yyn))
           {
             yyn += ]b4_symbol(1, kind)[;
             if (0 <= yyn && yyn <= yylast_ && yycheck_[yyn] == ]b4_symbol(1, kind)[)
@@ -699,7 +703,7 @@ m4_popdef([b4_at_dollar])])dnl
       string res = "syntax error, unexpected ";
       res ~= format!"%s"(tok);
       int yyn = yypact_[yystate];
-      if (!yy_pact_value_is_default_ (yyn))
+      if (!yyPactValueIsDefault(yyn))
       {
         /* Start YYX at -YYN if negative to avoid negative
            indexes in YYCHECK.  In other words, skip the first
@@ -712,30 +716,108 @@ m4_popdef([b4_at_dollar])])dnl
         int count = 0;
         for (int x = yyxbegin; x < yyxend; ++x)
           if (yycheck_[x + yyn] == x && x != ]b4_symbol(1, kind)[
-              && !yy_table_value_is_error_ (yytable_[x + yyn]))
-             ++count;
-          if (count < 5)
-          {
-             count = 0;
-             for (int x = yyxbegin; x < yyxend; ++x)
-               if (yycheck_[x + yyn] == x && x != ]b4_symbol(1, kind)[
-                   && !yy_table_value_is_error_ (yytable_[x + yyn]))
-               {
-                  res ~= count++ == 0 ? ", expecting " : " or ";
-                  res ~= format!"%s"(SymbolKind(x));
-               }
-          }
+              && !yyTableValueIsError(yytable_[x + yyn]))
+            ++count;
+        if (count < 5)
+        {
+          count = 0;
+          for (int x = yyxbegin; x < yyxend; ++x)
+            if (yycheck_[x + yyn] == x && x != ]b4_symbol(1, kind)[
+                && !yyTableValueIsError(yytable_[x + yyn]))
+            {
+              res ~= count++ == 0 ? ", expecting " : " or ";
+              res ~= format!"%s"(SymbolKind(x));
+            }
+        }
       }
+
       return res;
     }]])[
     return "syntax error";
   }
 
   /**
+   * Information needed to get the list of expected tokens and to forge
+   * a syntax error diagnostic.
+   */
+
+  public static final class Context
+  {
+
+    private YYStack yystack;
+    private SymbolKind yytoken;]b4_locations_if([[
+    private ]b4_location_type[ yylocation;]])[
+
+    this(YYStack stack, SymbolKind kind]b4_locations_if([[, ]b4_location_type[ loc]])[)
+    {
+      yystack = stack;
+      yytoken = kind;]b4_locations_if([[
+      yylocation = loc;]])[
+    }
+
+    public final SymbolKind getToken() const
+    {
+      return yytoken;
+    }]b4_locations_if([[
+
+    public final ]b4_location_type[ getLocation () //const //TODO
+    {
+      return yylocation;
+    }]])[
+
+    //static immutable int NTOKENS = ]b4_parser_class[.yyntokens_;
+    // DO I NEED THIS?
+
+    /**
+     * Put in YYARG at most YYARGN of the expected tokens given the
+     * current YYCTX, and return the number of tokens stored in YYARG.  If
+     * YYARG is null, return the number of expected tokens (guaranteed to
+     * be less than YYNTOKENS).
+     */
+
+    int getExpectedTokens (SymbolKind[] yyarg, int yyargn)
+    {
+      return getExpectedTokens (yyarg, 0, yyargn);
+    }
+
+    int getExpectedTokens (SymbolKind[] yyarg, int yyoffset, int yyargn)
+    {
+      int yycount = yyoffset;
+      int yyn = yypact_[this.yystack.stateAt(0)];
+      if (!yyPactValueIsDefault(yyn))
+      {
+        /* Start YYX at -YYN if negative to avoid negative
+           indexes in YYCHECK.  In other words, skip the first
+           -YYN actions for this state because they are default
+           actions.  */
+        int yyxbegin = yyn < 0 ? -yyn : 0;
+        /* Stay within bounds of both yycheck and yytname.  */
+        int yychecklim = yylast_ - yyn + 1;
+        int yyxend = yychecklim < yyntokens_ ? yychecklim : yyntokens_;
+        for (int yyx = yyxbegin; yyx < yyxend; ++yyx)
+          if (yycheck_[yyx + yyn] == yyx && yyx != ]b4_symbol(1, kind)[
+              && !yyTableValueIsError(yytable_[yyx + yyn]))
+            yycount++;
+        if (yycount < yyargn)
+        {
+          yycount = 0;
+          for (int x = yyxbegin; x < yyxend; ++x)
+            if (yycheck_[x + yyn] == x && x != ]b4_symbol(1, kind)[
+                && !yyTableValueIsError(yytable_[x + yyn]))
+              yyarg[yycount++] = SymbolKind(x);
+        }
+      }
+      //if (yyarg != null && yycount == yyoffset && yyoffset < yyargn)
+      //  yyarg[yycount] = null;
+      return yycount - yyoffset;
+    }
+  }
+
+  /**
    * Whether the given <code>yypact_</code> value indicates a defaulted state.
    * @@param yyvalue   the value to check
    */
-  private static bool yy_pact_value_is_default_ (int yyvalue)
+  private static bool yyPactValueIsDefault(int yyvalue)
   {
     return yyvalue == yypact_ninf_;
   }
@@ -744,7 +826,7 @@ m4_popdef([b4_at_dollar])])dnl
    * Whether the given <code>yytable_</code> value indicates a syntax error.
    * @@param yyvalue   the value to check
    */
-  private static bool yy_table_value_is_error_ (int yyvalue)
+  private static bool yyTableValueIsError(int yyvalue)
   {
     return yyvalue == yytable_ninf_;
   }
