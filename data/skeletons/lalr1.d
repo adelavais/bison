@@ -555,11 +555,7 @@ m4_popdef([b4_at_dollar])])dnl
           ++yynerrs_;
           if (yychar == TokenKind.]b4_symbol(empty, id)[)
             yytoken = ]b4_symbol(empty, kind)[;
-          /*SymbolKind[] yyarg = new SymbolKind[5];
-          auto ctx = new Context(yystack, yytoken, yyloc);
-          writeln(ctx.getExpectedTokens(yyarg, 0, 5));
-          writeln(yyarg);*/
-          yyerror (]b4_locations_if([yylloc, ])[yysyntax_error (yystate, yytoken));
+          yyerror (]b4_locations_if([yylloc, ])[yysyntax_error(new Context(yystack, yytoken]b4_locations_if([[, yylloc]])[)));
         }
 ]b4_locations_if([
         yyerrloc = yylloc;])[
@@ -663,7 +659,7 @@ m4_popdef([b4_at_dollar])])dnl
   }
 
   // Generate an error message.
-  private final string yysyntax_error (int yystate, SymbolKind tok)
+  private final string yysyntax_error(Context yyctx)
   {]b4_parse_error_case([verbose], [[
     /* There are many possibilities here to consider:
        - Assume YYFAIL is not used.  It's too flawed to consider.
@@ -696,41 +692,23 @@ m4_popdef([b4_at_dollar])])dnl
          will still contain any token that will not be accepted due
          to an error action in a later state.
       */
-    if (tok != ]b4_symbol(empty, kind)[)
+    if (yyctx.getToken != ]b4_symbol(empty, kind)[)
     {
       // FIXME: This method of building the message is not compatible
       // with internationalization.
       string res = "syntax error, unexpected ";
-      res ~= format!"%s"(tok);
-      int yyn = yypact_[yystate];
-      if (!yyPactValueIsDefault(yyn))
+      res ~= format!"%s"(yyctx.getToken);
+      SymbolKind[] yyarg = new SymbolKind[5];
+      int argmax = 5;
+      int yycount = yyctx.getExpectedTokens(yyarg, argmax);
+      if (yycount < argmax)
       {
-        /* Start YYX at -YYN if negative to avoid negative
-           indexes in YYCHECK.  In other words, skip the first
-           -YYN actions for this state because they are default
-           actions.  */
-        int yyxbegin = yyn < 0 ? -yyn : 0;
-        /* Stay within bounds of both yycheck and yytname.  */
-        int yychecklim = yylast_ - yyn + 1;
-        int yyxend = yychecklim < yyntokens_ ? yychecklim : yyntokens_;
-        int count = 0;
-        for (int x = yyxbegin; x < yyxend; ++x)
-          if (yycheck_[x + yyn] == x && x != ]b4_symbol(1, kind)[
-              && !yyTableValueIsError(yytable_[x + yyn]))
-            ++count;
-        if (count < 5)
+        for (int yyi = 0; yyi < yycount; yyi++)
         {
-          count = 0;
-          for (int x = yyxbegin; x < yyxend; ++x)
-            if (yycheck_[x + yyn] == x && x != ]b4_symbol(1, kind)[
-                && !yyTableValueIsError(yytable_[x + yyn]))
-            {
-              res ~= count++ == 0 ? ", expecting " : " or ";
-              res ~= format!"%s"(SymbolKind(x));
-            }
+          res ~= yyi == 0 ? ", expecting " : " or ";
+          res ~= format!"%s"(SymbolKind(yyarg[yyi]));
         }
       }
-
       return res;
     }]])[
     return "syntax error";
@@ -755,12 +733,12 @@ m4_popdef([b4_at_dollar])])dnl
       yylocation = loc;]])[
     }
 
-    public final SymbolKind getToken() const
+    final SymbolKind getToken() const
     {
       return yytoken;
     }]b4_locations_if([[
 
-    public final ]b4_location_type[ getLocation () //const //TODO
+    final ]b4_location_type[ getLocation () //const //TODO
     {
       return yylocation;
     }]])[
@@ -807,9 +785,7 @@ m4_popdef([b4_at_dollar])])dnl
               yyarg[yycount++] = SymbolKind(x);
         }
       }
-      //if (yyarg != null && yycount == yyoffset && yyoffset < yyargn)
-      //  yyarg[yycount] = null;
-      return yycount - yyoffset;
+      return yycount /*- yyoffset*/;
     }
   }
 
