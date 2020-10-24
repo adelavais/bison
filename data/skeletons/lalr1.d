@@ -77,7 +77,15 @@ public interface Lexer
    * @@param loc The location of the element to which the
    *                error message is related]])[
    * @@param s The string for the error message.  */
-   void yyerror (]b4_locations_if([b4_location_type[ loc, ]])[string s);
+  void yyerror (]b4_locations_if([b4_location_type[ loc, ]])[string s);
+]b4_parse_error_bmatch([custom], [[
+  /**
+   * Build and emit a "syntax error" message in a user-defined way.
+   *
+   * @@param ctx  The context of the error.
+   */
+  void yysyntax_error(][Context ctx);
+]])[
 }
 
 ]b4_locations_if([b4_position_type_if([[
@@ -660,7 +668,10 @@ m4_popdef([b4_at_dollar])])dnl
 
   // Generate an error message.
   private final string yysyntax_error(Context yyctx)
-  {]b4_parse_error_case([verbose], [[
+  {]b4_parse_error_case(
+[custom], [[
+      yylexer.syntax_error(yyctx);]],
+[detailed\|verbose], [[
     /* There are many possibilities here to consider:
        - Assume YYFAIL is not used.  It's too flawed to consider.
          See
