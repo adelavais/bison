@@ -14032,7 +14032,7 @@ Interface}).
 @example
 public void syntax_error(YYParser.Context ctx)
 @{
-  write(ctx.getLocation(), ": syntax error");
+  stderr.write(ctx.getLocation(), ": syntax error");
   // Report the expected tokens.
   @{
     immutable int TOKENMAX = 5;
@@ -14040,14 +14040,13 @@ public void syntax_error(YYParser.Context ctx)
     int n = ctx.getExpectedTokens(arg, TOKENMAX);
     if (n < TOKENMAX)
       for (int i = 0; i < n; ++i)
-        write((i == 0 ? ": expected " : " or "), arg[i]);
+        stderr.write((i == 0 ? ": expected " : " or "), arg[i]);
   @}
   // Report the unexpected token which triggered the error.
   @{
     YYParser.SymbolKind lookahead = ctx.getToken();
-    write(" before ", lookahead);
+    stderr.writeln(" before ", lookahead);
   @}
-  writeln();
 @}
 @end example
 

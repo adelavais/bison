@@ -702,13 +702,13 @@ m4_popdef([b4_at_dollar])])dnl
          list is correct for canonical LR with one exception: it
          will still contain any token that will not be accepted due
          to an error action in a later state.
-      */
+     */
     if (yyctx.getToken() != ]b4_symbol(empty, kind)[)
     {
       // FIXME: This method of building the message is not compatible
       // with internationalization.
       string res = "syntax error, unexpected ";
-      res ~= format!"%s"(yyctx.getToken);
+      res ~= format!"%s"(yyctx.getToken());
       immutable int argmax = 5;
       SymbolKind[] yyarg = new SymbolKind[argmax];
       int yycount = yyctx.getExpectedTokens(yyarg, argmax);
@@ -782,7 +782,7 @@ m4_popdef([b4_at_dollar])])dnl
           if (yycheck_[yyx + yyn] == yyx && yyx != ]b4_symbol(1, kind)[
               && !yyTableValueIsError(yytable_[yyx + yyn]))
             yycount++;
-        if (yycount < yyargn)
+        if (yycount < yyntokens_)
         {
           yycount = 0;
           for (int x = yyxbegin; x < yyxend; ++x)
