@@ -77,7 +77,15 @@ public interface Lexer
    * @@param loc The location of the element to which the
    *                error message is related]])[
    * @@param s The string for the error message.  */
-   void yyerror (]b4_locations_if([b4_location_type[ loc, ]])[string s);
+  void yyerror (]b4_locations_if([b4_location_type[ loc, ]])[string s);
+]b4_parse_error_bmatch([custom], [[
+  /**
+   * Build and emit a "syntax error" message in a user-defined way.
+   *
+   * @@param ctx  The context of the error.
+   */
+  void syntax_error(]b4_parser_class[.Context ctx);
+]])[
 }
 
 ]b4_locations_if([b4_position_type_if([[
@@ -276,7 +284,7 @@ b4_user_union_members
     return yylexer.yylex ();
   }
 
-  protected final void yyerror (]b4_locations_if(ref [b4_location_type[ loc, ]])[string s) {
+  protected final void yyerror (]b4_locations_if([b4_location_type[ loc, ]])[string s) {
     yylexer.yyerror (]b4_locations_if([loc, ])[s);
   }
 
@@ -555,7 +563,7 @@ m4_popdef([b4_at_dollar])])dnl
           ++yynerrs_;
           if (yychar == TokenKind.]b4_symbol(empty, id)[)
             yytoken = ]b4_symbol(empty, kind)[;
-          yyerror (]b4_locations_if([yylloc, ])[yysyntax_error(new Context(yystack, yytoken]b4_locations_if([[, yylloc]])[)));
+          yysyntax_error(new Context(yystack, yytoken]b4_locations_if([[, yylloc]])[));
         }
 ]b4_locations_if([
         yyerrloc = yylloc;])[
@@ -659,8 +667,11 @@ m4_popdef([b4_at_dollar])])dnl
   }
 
   // Generate an error message.
-  private final string yysyntax_error(Context yyctx)
-  {]b4_parse_error_case([verbose], [[
+  private final void yysyntax_error(Context yyctx)
+  {]b4_parse_error_bmatch(
+[custom], [[
+    yylexer.syntax_error(yyctx);]],
+[detailed\|verbose], [[
     /* There are many possibilities here to consider:
        - Assume YYFAIL is not used.  It's too flawed to consider.
          See
@@ -691,16 +702,16 @@ m4_popdef([b4_at_dollar])])dnl
          list is correct for canonical LR with one exception: it
          will still contain any token that will not be accepted due
          to an error action in a later state.
-      */
+     */
     if (yyctx.getToken() != ]b4_symbol(empty, kind)[)
     {
       // FIXME: This method of building the message is not compatible
       // with internationalization.
       string res = "syntax error, unexpected ";
-      res ~= format!"%s"(yyctx.getToken);
+      res ~= format!"%s"(yyctx.getToken());
       immutable int argmax = 5;
-      SymbolKind[] yyarg = new SymbolKind[argmax];
-      int yycount = yyctx.getExpectedTokens(yyarg, argmax);
+      SymbolKind[] yyarg = new SymbolKind[yyntokens_];
+      int yycount = yyctx.getExpectedTokens(yyarg, yyntokens_);
       if (yycount < argmax)
       {
         for (int yyi = 0; yyi < yycount; yyi++)
@@ -709,9 +720,10 @@ m4_popdef([b4_at_dollar])])dnl
           res ~= format!"%s"(SymbolKind(yyarg[yyi]));
         }
       }
-      return res;
-    }]])[
-    return "syntax error";
+      yyerror(]b4_locations_if([yyctx.getLocation(), ])[res);
+    }]],
+[[simple]], [[
+    yyerror(]b4_locations_if([yyctx.getLocation(), ])["syntax error");]])[
   }
 
   /**
@@ -770,7 +782,7 @@ m4_popdef([b4_at_dollar])])dnl
           if (yycheck_[yyx + yyn] == yyx && yyx != ]b4_symbol(1, kind)[
               && !yyTableValueIsError(yytable_[yyx + yyn]))
             yycount++;
-        if (yycount < yyargn)
+        if (yycount < yyntokens_)
         {
           yycount = 0;
           for (int x = yyxbegin; x < yyxend; ++x)
