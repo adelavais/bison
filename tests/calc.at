@@ -670,7 +670,6 @@ m4_define([_AT_DATA_CALC_Y(d)],
 %token <ival> NUM   "number"
 %type  <ival> exp
 
-// the tokens must be put in the same order as in the other parsers
 %token EQUAL  "="
        MINUS  "-"
        PLUS   "+"
