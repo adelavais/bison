@@ -710,8 +710,8 @@ m4_popdef([b4_at_dollar])])dnl
       string res = "syntax error, unexpected ";
       res ~= format!"%s"(yyctx.getToken());
       immutable int argmax = 5;
-      SymbolKind[] yyarg = new SymbolKind[argmax];
-      int yycount = yyctx.getExpectedTokens(yyarg, argmax);
+      SymbolKind[] yyarg = new SymbolKind[yyntokens_];
+      int yycount = yyctx.getExpectedTokens(yyarg, yyntokens_);
       if (yycount < argmax)
       {
         for (int yyi = 0; yyi < yycount; yyi++)

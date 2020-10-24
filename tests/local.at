@@ -873,25 +873,30 @@ public void yyerror (]AT_LOCATION_IF([[YYLocation l, ]])[string m)
   stderr.writeln (]AT_LOCATION_IF([[l, ": ", ]])[m);
 }
 ]AT_ERROR_CUSTOM_IF([[
+// In the case of D, there are no single quotes around the symbols
+// so they need to be added here
+public string transformToken(]AT_API_PREFIX[Parser.SymbolKind token)
+{
+  string tokenStr;
+  foreach (i; format("%s", token))
+  {
+    if (i == '\"')
+      tokenStr ~= '\'';
+    else
+      tokenStr ~= i;
+  }
+  if (tokenStr.length == 1)
+    return '\'' ~ tokenStr ~ '\'';
+  else
+    return tokenStr;
+}
+
 public void syntax_error(]AT_API_PREFIX[Parser.Context ctx)
 {
     stderr.write(]AT_LOCATION_IF([[ctx.getLocation(), ": ",]])["syntax error");
     {
       ]AT_API_PREFIX[Parser.SymbolKind token = ctx.getToken();
-      // In the case of D, there are no single quotes around the symbols
-      // so they need to be added here
-      string tokenStr;
-      foreach (i; format("%s", token))
-      {
-        if (i == '\"')
-          tokenStr ~= '\"';
-        else
-          tokenStr ~= i;
-      }
-      if (tokenStr.length == 1)
-        stderr.write(" on token @<:@\'", tokenStr, "\'@:>@");
-      else
-        stderr.write(" on token @<:@", tokenStr, "@:>@");
+      stderr.write(" on token @<:@", transformToken(token), "@:>@");
     }
     {
       immutable int argmax = 7;
@@ -900,22 +905,7 @@ public void syntax_error(]AT_API_PREFIX[Parser.Context ctx)
       if (0 < n) {
         stderr.write(" (expected:");
         for (int i = 0; i < n; ++i)
-        {
-          // In the case of D, there are no single quotes around the symbols
-          // so they need to be added here
-          string tokenStr;
-          foreach (c; format("%s", arg[i]))
-          {
-            if (c == '\"')
-              tokenStr ~= '\'';
-            else
-              tokenStr ~= c;
-          }
-          if (tokenStr.length == 1)
-            stderr.write(" @<:@", "\'", tokenStr, "\'", "@:>@");
-          else
-            stderr.write(" @<:@", tokenStr, "@:>@");
-        }
+          stderr.write(" @<:@", transformToken(arg[i]), "@:>@");
         stderr.writeln(")");
       }
     }
