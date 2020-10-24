@@ -718,7 +718,6 @@ m4_popdef([b4_at_dollar])])dnl
    * Information needed to get the list of expected tokens and to forge
    * a syntax error diagnostic.
    */
-
   public static final class Context
   {
 
@@ -738,21 +737,16 @@ m4_popdef([b4_at_dollar])])dnl
       return yytoken;
     }]b4_locations_if([[
 
-    final ]b4_location_type[ getLocation () //const //TODO
+    final ]b4_location_type[ getLocation ()
     {
       return yylocation;
     }]])[
-
-    //static immutable int NTOKENS = ]b4_parser_class[.yyntokens_;
-    // DO I NEED THIS?
-
     /**
      * Put in YYARG at most YYARGN of the expected tokens given the
      * current YYCTX, and return the number of tokens stored in YYARG.  If
      * YYARG is null, return the number of expected tokens (guaranteed to
      * be less than YYNTOKENS).
      */
-
     int getExpectedTokens (SymbolKind[] yyarg, int yyargn)
     {
       return getExpectedTokens (yyarg, 0, yyargn);
@@ -785,7 +779,7 @@ m4_popdef([b4_at_dollar])])dnl
               yyarg[yycount++] = SymbolKind(x);
         }
       }
-      return yycount /*- yyoffset*/;
+      return yycount - yyoffset;
     }
   }
 
