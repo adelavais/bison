@@ -14025,6 +14025,35 @@ Declarations}), then the parser no longer passes syntax error messages to
 @code{reportSyntaxError} function.
 
 Whether it uses @code{yyerror} is up to the user.
+
+Here is an example of a reporting function (@pxref{D Parser Context
+Interface}).
+
+@example
+public void syntax_error(YYParser.Context ctx)
+@{
+  write(ctx.getLocation(), ": syntax error");
+  // Report the expected tokens.
+  @{
+    immutable int TOKENMAX = 5;
+    YYParser.SymbolKind[] arg = new YYParser.SymbolKind[TOKENMAX];
+    int n = ctx.getExpectedTokens(arg, TOKENMAX);
+    if (n < TOKENMAX)
+      for (int i = 0; i < n; ++i)
+        write((i == 0 ? ": expected " : " or "), arg[i]);
+  @}
+  // Report the unexpected token which triggered the error.
+  @{
+    YYParser.SymbolKind lookahead = ctx.getToken();
+    write(" before ", lookahead);
+  @}
+  writeln();
+@}
+@end example
+
+@noindent
+This implementation is inappropriate for internationalization, see
+the ‘c/bistromathic’ example for a better alternative.
 @end deftypemethod
 
 @node Java Parsers

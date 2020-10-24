@@ -84,7 +84,7 @@ public interface Lexer
    *
    * @@param ctx  The context of the error.
    */
-  void yysyntax_error(][Context ctx);
+  void syntax_error(]b4_parser_class[.Context ctx);
 ]])[
 }
 
@@ -284,7 +284,7 @@ b4_user_union_members
     return yylexer.yylex ();
   }
 
-  protected final void yyerror (]b4_locations_if(ref [b4_location_type[ loc, ]])[string s) {
+  protected final void yyerror (]b4_locations_if([b4_location_type[ loc, ]])[string s) {
     yylexer.yyerror (]b4_locations_if([loc, ])[s);
   }
 
@@ -563,7 +563,7 @@ m4_popdef([b4_at_dollar])])dnl
           ++yynerrs_;
           if (yychar == TokenKind.]b4_symbol(empty, id)[)
             yytoken = ]b4_symbol(empty, kind)[;
-          yyerror (]b4_locations_if([yylloc, ])[yysyntax_error(new Context(yystack, yytoken]b4_locations_if([[, yylloc]])[)));
+          yysyntax_error(new Context(yystack, yytoken]b4_locations_if([[, yylloc]])[));
         }
 ]b4_locations_if([
         yyerrloc = yylloc;])[
@@ -667,10 +667,10 @@ m4_popdef([b4_at_dollar])])dnl
   }
 
   // Generate an error message.
-  private final string yysyntax_error(Context yyctx)
-  {]b4_parse_error_case(
+  private final void yysyntax_error(Context yyctx)
+  {]b4_parse_error_bmatch(
 [custom], [[
-      yylexer.syntax_error(yyctx);]],
+    yylexer.syntax_error(yyctx);]],
 [detailed\|verbose], [[
     /* There are many possibilities here to consider:
        - Assume YYFAIL is not used.  It's too flawed to consider.
@@ -720,9 +720,10 @@ m4_popdef([b4_at_dollar])])dnl
           res ~= format!"%s"(SymbolKind(yyarg[yyi]));
         }
       }
-      return res;
-    }]])[
-    return "syntax error";
+      yyerror(]b4_locations_if([yyctx.getLocation(), ])[res);
+    }]],
+[[simple]], [[
+    yyerror(]b4_locations_if([yyctx.getLocation(), ])["syntax error");]])[
   }
 
   /**
