@@ -400,6 +400,8 @@ b4_locations_if([, ref ]b4_location_type[ yylocationp])[)
     }
   }
 ]])[
+
+  YYStack yystack;
   /**
    * Parse input from the scanner that was specified at object construction
    * time.  Return whether the end of the input was reached successfully.
@@ -419,7 +421,8 @@ b4_locations_if([, ref ]b4_location_type[ yylocationp])[)
     int yylen = 0;
     int yystate = 0;
 
-    YYStack yystack;
+    // Empty stack.
+    yystack.pop(cast (int) yystack.height);
 
     /* Error handling.  */
     int yynerrs_ = 0;]b4_locations_if([[
@@ -754,7 +757,7 @@ m4_popdef([b4_at_dollar])])dnl
    * Information needed to get the list of expected tokens and to forge
    * a syntax error diagnostic.
    */
-  public static final class Context
+  public final class Context
   {
 
     private YYStack yystack;
@@ -792,12 +795,10 @@ m4_popdef([b4_at_dollar])])dnl
     {
       int yycount = yyoffset;
 ]b4_lac_if([[
-// #if ]b4_api_PREFIX[DEBUG care e treaba aici?
     // Execute LAC once. We don't care if it is successful, we
     // only do it for the sake of debugging output.
-    if (!yy_lac_established) // din yystack i guess
-      yyLACcheck(yytoken); // era (yyla_.kind ());
-// #endif
+    if (!yy_lac_established)
+      yy_lac_check(yytoken); // era (yyla_.kind ());
 
     for (int yyx = 0; yyx < yyntokens_; ++yyx)
       {
@@ -843,88 +844,97 @@ m4_popdef([b4_at_dollar])])dnl
   }
 
 ]b4_lac_if([[
+  /// The stack for LAC.
+  /// Logically, the yy_lac_stack's lifetime is confined to the function
+  /// yy_lac_check_. We just store it as a member of this class to hold
+  /// on to the memory and to avoid frequent reallocations.
+  /// Since yy_lac_check_ is const, this member must be mutable.
+  private SymbolKind[] yylac_stack; // todo adela care e treaba cu mutable
+  /// Whether an initial LAC context was established.
+  private bool yy_lac_established;
   /// Check the lookahead yytoken.
   /// \returns  true iff the token will be eventually shifted.
-  private bool yy_lac_check(SymbolKind yytoken) const
+  private bool yy_lac_check(SymbolKind yytoken) //const //private
   {
     // Logically, the yylac_stack's lifetime is confined to this function.
     // Clear it, to get rid of potential left-overs from previous call.
-    destroy(yylac_stack);
+    yylac_stack.destroy();
     // Reduce until we encounter a shift and thereby accept the token.
-//#if ]b4_api_PREFIX[DEBUG
-    yycdebug("LAC: checking lookahead ", yytoken, ':');
-//#endif
+]b4_parse_trace_if([[
+    yycdebug("LAC: checking lookahead " ~ yytoken ~ ':');
+]])[
     ptrdiff_t lac_top = 0;
     while (true)
     {
-      state_type top_state = (yylac_stack.empty()
-                                ? yystack_[lac_top].state
-                                : yylac_stack_.back ());
-        int yyrule = yypact_[+top_state];
-        if (yy_pact_value_is_default_ (yyrule)
+      SymbolKind top_state =
+        (yylac_stack.empty() ? yystack.stateAt(cast (int) lac_top)
+                              : yylac_stack[$ - 1]);
+      int yyrule = yypact_[+top_state]; // de ce e +top_state
+      if (yyPactValueIsDefault(yyrule)
             || (yyrule += yytoken) < 0 || yylast_ < yyrule
             || yycheck_[yyrule] != yytoken)
-          {
-            // Use the default action.
-            yyrule = yydefact_[+top_state];
-            if (yyrule == 0)
-              {
-                YYCDEBUG << " Err\n";
-                return false;
-              }
+      {
+          // Use the default action.
+          yyrule = yydefact_[+top_state];
+          if (yyrule == 0)
+          {]b4_parse_trace_if([[
+            yycdebugln(" Err");]])[
+            return false;
           }
-        else
-          {
-            // Use the action from yytable.
-            yyrule = yytable_[yyrule];
-            if (yy_table_value_is_error_ (yyrule))
-              {
-                YYCDEBUG << " Err\n";
-                return false;
-              }
-            if (0 < yyrule)
-              {
-                YYCDEBUG << " S" << yyrule << '\n';
-                return true;
-              }
-            yyrule = -yyrule;
-          }
-        // By now we know we have to simulate a reduce.
-        YYCDEBUG << " R" << yyrule - 1;
-        // Pop the corresponding number of values from the stack.
-        {
-          std::ptrdiff_t yylen = yyr2_[yyrule];
-          // First pop from the LAC stack as many tokens as possible.
-          std::ptrdiff_t lac_size = std::ptrdiff_t (yylac_stack_.size ());
-          if (yylen < lac_size)
-            {
-              yylac_stack_.resize (std::size_t (lac_size - yylen));
-              yylen = 0;
-            }
-          else if (lac_size)
-            {
-              yylac_stack_.clear ();
-              yylen -= lac_size;
-            }
-          // Only afterwards look at the main stack.
-          // We simulate popping elements by incrementing lac_top.
-          lac_top += yylen;
-        }
-        // Keep top_state in sync with the updated stack.
-        top_state = (yylac_stack_.empty ()
-                     ? yystack_[lac_top].state
-                     : yylac_stack_.back ());
-        // Push the resulting state of the reduction.
-        state_type state = yy_lr_goto_state_ (top_state, yyr1_[yyrule]);
-        YYCDEBUG << " G" << int (state);
-        yylac_stack_.push_back (state);
       }
+      else
+      {
+        // Use the action from yytable.
+        yyrule = yytable_[yyrule];
+        if (yyTableValueIsError(yyrule))
+        {]b4_parse_trace_if([[
+          yycdebugln(" Err");]])[
+          return false;
+        }
+        if (0 < yyrule)
+        {]b4_parse_trace_if([[
+          yycdebugln(" S", yyrule);]])[
+          return true;
+        }
+        yyrule = -yyrule;
+      }
+      // By now we know we have to simulate a reduce.
+]b4_parse_trace_if([[
+      yycdebug(" R", yyrule - 1);]])[
+      // Pop the corresponding number of values from the stack.
+      {
+        ptrdiff_t yylen = yyr2_[yyrule];
+        // First pop from the LAC stack as many tokens as possible.
+        ptrdiff_t lac_size = cast (ptrdiff_t) yylac_stack.length;
+        if (yylen < lac_size)
+        {
+          yylac_stack.length = (size_t (lac_size - yylen));
+          yylen = 0;
+        }
+        else if (lac_size)
+        {
+          yylac_stack.destroy();
+          yylen -= lac_size;
+        }
+        // Only afterwards look at the main stack.
+        // We simulate popping elements by incrementing lac_top.
+        lac_top += yylen;
+      }
+      // Keep top_state in sync with the updated stack.
+      top_state = (yylac_stack.empty
+                      ? yystack.stateAt(cast (int) lac_top)
+                      : yylac_stack[$ - 1]);
+      // Push the resulting state of the reduction.
+      SymbolKind state = SymbolKind(0); //yy_lr_goto_state_ (top_state, yyr1_[yyrule]);
+]b4_parse_trace_if([[
+      yycdebug(" G", cast (int) state);]])[
+      yylac_stack ~= state;
+    }
   }
 
   // Establish the initial context if no initial context currently exists.
   // \returns  true iff the token will be eventually shifted.
-  private bool
-  ]b4_parser_class[::yy_lac_establish_ (symbol_kind_type yytoken)
+  private bool yy_lac_establish(SymbolKind yytoken)
   {
     /* Establish the initial context for the current lookahead if no initial
        context is currently established.
@@ -948,24 +958,21 @@ m4_popdef([b4_at_dollar])])dnl
        For parse.lac=full, the implementation of yy_lac_establish_ is as
        follows.  If no initial context is currently established for the
        current lookahead, then check if that lookahead can eventually be
-       shifted if syntactic actions continue from the current context.  */
-    if (!yy_lac_established_)
-      {
-#if ]b4_api_PREFIX[DEBUG
-        YYCDEBUG << "LAC: initial context established for "
-                 << symbol_name (yytoken) << '\n';
-#endif
-        yy_lac_established_ = true;
-        return yy_lac_check_ (yytoken);
-      }
+       shifted if syntactic actions continue from the current context.
+     */
+    if (!yy_lac_established)
+    {]b4_parse_trace_if([[
+      yycdebugln("LAC: initial context established for ", yytoken);]])[
+      yy_lac_established = true;
+      return yy_lac_check(yytoken);
+    }
     return true;
   }
 
   // Discard any previous initial lookahead context.
   /// \param event  the event which caused the lookahead to be discarded.
   ///               Only used for debbuging output.
-  private void
-  ]b4_parser_class[::yy_lac_discard_ (const char* evt)
+  private void yy_lac_discard(const char* evt)
   {
    /* Discard any previous initial lookahead context because of Event,
       which may be a lookahead change or an invalidation of the currently
@@ -977,13 +984,13 @@ m4_popdef([b4_at_dollar])])dnl
       currently established initial context, so error recovery manipulates
       the parser stacks to try to find a new initial context in which the
       current lookahead is syntactically acceptable.  If it fails to find
-      such a context, it discards the lookahead.  */
-    if (yy_lac_established_)
-      {
-        YYCDEBUG << "LAC: initial context discarded due to "
-                 << evt << '\n';
-        yy_lac_established_ = false;
-      }
+      such a context, it discards the lookahead.
+     */
+    if (yy_lac_established)
+    {]b4_parse_trace_if([[
+      yycdebugln("LAC: initial context discarded due to ", evt);]])[
+      yy_lac_established = false;
+    }
   }]])[
 
   /**
@@ -1077,17 +1084,7 @@ m4_popdef([b4_at_dollar])])dnl
   }
 
   private final struct YYStack {
-    private YYStackElement[] stack = [];]b4_lac_if([[
-    /// The stack for LAC.
-    /// Logically, the yy_lac_stack's lifetime is confined to the function
-    /// yy_lac_check_. We just store it as a member of this class to hold
-    /// on to the memory and to avoid frequent reallocations.
-    /// Since yy_lac_check_ is const, this member must be mutable.
-    //todo adela mutable?
-    state_type[] yylac_stack;
-    /// Whether an initial LAC context was established.
-    bool yy_lac_established;
-]])[
+    private YYStackElement[] stack = [];
 
     public final ulong height()
     {
@@ -1110,7 +1107,7 @@ m4_popdef([b4_at_dollar])])dnl
       stack.length -= num;
     }
 
-    public final int stateAt (int i)
+    public final int stateAt (int i) const
     {
       return stack[$-i-1].state;
     }
