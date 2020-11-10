@@ -446,3 +446,18 @@ m4_define([b4_var_decls],
 ], [$@])])
 m4_define([b4_var_decl],
           [    protected $1;])
+
+
+# b4_symbol_translate(STRING)
+# ---------------------------
+# Used by "bison" in the array of symbol names to mark those that
+# require translation.
+m4_define([b4_symbol_translate],
+[[i18n($1)]])
+
+
+# b4_trans(STRING)
+# ----------------
+# Translate a string if i18n is enabled.  Avoid collision with b4_translate.
+m4_define([b4_trans],
+[b4_has_translations_if([i18n($1)], [$1])])

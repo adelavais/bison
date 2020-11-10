@@ -679,25 +679,37 @@ m4_popdef([b4_at_dollar])])dnl
 [detailed\|verbose], [[
     if (yyctx.getToken() != ]b4_symbol(empty, kind)[)
     {
-      // FIXME: This method of building the message is not compatible
-      // with internationalization.
       immutable int argmax = 5;
       SymbolKind[] yyarg = new SymbolKind[argmax];
       int yycount = yysyntaxErrorArguments(yyctx, yyarg, argmax);
-      string res = "syntax error, unexpected ";
-      res ~= format!"%s"(yyarg[0]);
-      if (yycount < argmax + 1)
+      string[] yystr = new string[yycount];
+      for (int yyi = 0; yyi < yycount; yyi++)
+        yystr[yyi] = format!"%s"(yyarg[yyi]);
+      string res, yyformat;
+      switch (yycount)
       {
-        for (int yyi = 1; yyi < yycount; yyi++)
-        {
-          res ~= yyi == 1 ? ", expecting " : " or ";
-          res ~= format!"%s"(SymbolKind(yyarg[yyi]));
-        }
+        case  1: yyformat = ]b4_trans(["syntax error, unexpected %s"])[;
+                 res = format(yyformat, yystr[0]);
+                 break;
+        case  2: yyformat = ]b4_trans(["syntax error, unexpected %s, expecting %s"])[;
+                 res = format(yyformat, yystr[0], yystr[1]);
+                 break;
+        case  3: yyformat = ]b4_trans(["syntax error, unexpected %s, expecting %s or %s"])[;
+                 res = format(yyformat, yystr[0], yystr[1], yystr[2]);
+                 break;
+        case  4: yyformat = ]b4_trans(["syntax error, unexpected %s, expecting %s or %s or %s"])[;
+                 res = format(yyformat, yystr[0], yystr[1], yystr[2], yystr[3]);
+                 break;
+        case  5: yyformat = ]b4_trans(["syntax error, unexpected %s, expecting %s or %s or %s or %s"])[;
+                 res = format(yyformat, yystr[0], yystr[1], yystr[2], yystr[3], yystr[4]);
+                 break;
+        default: res = ]b4_trans(["syntax error"])[;
+                 break;
       }
       yyerror(]b4_locations_if([yyctx.getLocation(), ])[res);
     }]],
 [[simple]], [[
-    yyerror(]b4_locations_if([yyctx.getLocation(), ])["syntax error");]])[
+    yyerror(]b4_locations_if([yyctx.getLocation(), ])[]b4_trans(["syntax error"])[);]])[
   }
 
 ]b4_parse_error_bmatch(

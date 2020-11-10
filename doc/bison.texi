@@ -13945,6 +13945,23 @@ or nonzero, full tracing.
 Identify the Bison version and skeleton used to generate this parser.
 @end deftypecv
 
+If you enabled token internationalization (@pxref{Token I18n}), you must
+provide the parser with the following function:
+
+@deftypecv {Static Method} {YYParser} {string} {i18n} (@code{string} @var{s})
+Return the translation of @var{s} in the user's language.  As an example:
+
+@example
+%code @{
+  static ResourceBundle myResources
+    = ResourceBundle.getBundle("domain-name");
+  static final string i18n(string s) @{
+    return myResources.getString(s);
+  @}
+@}
+@end example
+@end deftypecv
+
 @node D Parser Context Interface
 @subsection D Parser Context Interface
 The parser context provides information to build error reports when you
