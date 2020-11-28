@@ -13945,6 +13945,55 @@ or nonzero, full tracing.
 Identify the Bison version and skeleton used to generate this parser.
 @end deftypecv
 
+The internationalization in D is very simmilar to the one in C. The D
+parser uses gettext for user messages and dgettext for Bison messages.
+
+If gettext is not present on your system, install it and re-run Bison's
+configuration.
+
+For enabling internationalisation, import bindtextdomain and textdomain
+from C:
+
+@example
+extern(C) char* bindtextdomain(const char* domainname, const char* dirname);
+extern(C) char* textdomain(const char* domainname);
+@end example
+
+The main function should load the translation catalogues, similarly to the
+@file{c/bistromathic} example:
+
+@example
+int main()
+@{
+  import core.stdc.locale;
+
+  // Set up internationalization.
+  setlocale(LC_ALL, "");
+  // Use Bison's standard translation catalogue for error messages
+  // (the generated messages).
+  bindtextdomain("bison-runtime", BISON_LOCALEDIR);
+  // For the translation catalogue of your own project, use the
+  // name of your project.
+  bindtextdomain("bison", LOCALEDIR);
+  textdomain("bison");
+
+  // usual main content
+  ...
+@}
+@end example
+
+String aliases may be marked for internationalization (@pxref{Token
+I18n}):
+
+@example
+%token PLUS   "+"
+       MINUS  "-"
+       STAR   "*"
+       SLASH  "/"
+       EOL    _("end of line")
+%token <ival> NUM _("number")
+@end example
+
 @node D Parser Context Interface
 @subsection D Parser Context Interface
 The parser context provides information to build error reports when you
