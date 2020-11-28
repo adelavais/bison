@@ -41,6 +41,8 @@ version(D_Version2) {
 ]b4_percent_code_get([[imports]])[
 import std.format;
 
+extern(C) char* dgettext(const char*, const char*);
+
 /**
  * A Bison parser, automatically generated from <tt>]m4_bpatsubst(b4_file_name, [^"\(.*\)"$], [\1])[</tt>.
  *
@@ -704,20 +706,49 @@ m4_popdef([b4_at_dollar])])dnl
       immutable int argmax = 5;
       SymbolKind[] yyarg = new SymbolKind[argmax];
       int yycount = yysyntaxErrorArguments(yyctx, yyarg, argmax);
-      string res = "syntax error, unexpected ";
-      res ~= format!"%s"(yyarg[0]);
-      if (yycount < argmax + 1)
+      string[] yystr = new string[yycount];
+      for (int yyi = 0; yyi < yycount; yyi++)
+        yystr[yyi] = format!"%s"(yyarg[yyi]);
+      string res, yyformat;
+      char *text;
+      import std.string;
+      import std.conv;
+      switch (yycount)
       {
-        for (int yyi = 1; yyi < yycount; yyi++)
-        {
-          res ~= yyi == 1 ? ", expecting " : " or ";
-          res ~= format!"%s"(SymbolKind(yyarg[yyi]));
-        }
+        case  1:
+          text = dgettext("bison-runtime", "syntax error, unexpected %s");
+          yyformat = to!string(text);
+          res = format(yyformat, yystr[0]);
+         break;
+        case  2:
+          text = dgettext("bison-runtime", "syntax error, unexpected %s, expecting %s");
+          yyformat = to!string(text);
+          res = format(yyformat, yystr[0], yystr[1]);
+          break;
+        case  3:
+          text = dgettext("bison-runtime", "syntax error, unexpected %s, expecting %s or %s");
+          yyformat = to!string(text);
+          res = format(yyformat, yystr[0], yystr[1], yystr[2]);
+          break;
+        case  4:
+          text = dgettext("bison-runtime", "syntax error, unexpected %s, expecting %s or %s or %s");
+          yyformat = to!string(text);
+          res = format(yyformat, yystr[0], yystr[1], yystr[2], yystr[3]);
+          break;
+        case  5:
+          text = dgettext("bison-runtime", "syntax error, unexpected %s, expecting %s or %s or %s or %s");
+          yyformat = to!string(text);
+          res = format(yyformat, yystr[0], yystr[1], yystr[2], yystr[3], yystr[4]);
+          break;
+        default:
+          text = dgettext("bison-runtime", "syntax error");
+          res = to!string(text);
+          break;
       }
       yyerror(]b4_locations_if([yyctx.getLocation(), ])[res);
     }]],
 [[simple]], [[
-    yyerror(]b4_locations_if([yyctx.getLocation(), ])["syntax error");]])[
+    yyerror(]b4_locations_if([yyctx.getLocation(), ])[dgettext("bison-runtime", "syntax error"));]])[
   }
 
 ]b4_parse_error_bmatch(
