@@ -180,10 +180,28 @@ if (isInputRange!R && is(ElementType!R : dchar))
   }
 }
 
+extern(C) char * bindtextdomain (const char * domainname, const char * dirname);
+extern(C) char * textdomain (const char * domainname);
+
 int main()
 {
+  import core.stdc.locale;
+
+  // Set up internationalization.
+  setlocale (LC_ALL, "");
+
+  // Use Bison's standard translation catalogue for error messages
+  // (the generated messages).
+  bindtextdomain ("bison-runtime", "/usr/local/share/locale");
+  bindtextdomain ("bison", "/usr/local/share/locale");
+
+  textdomain ("bison");
+  //printf("%s\n", dgettext("bison", "syntax error"));
+
   auto l = calcLexer(stdin);
   auto p = new Calc(l);
   p.parse();
   return l.exit_status;
+
+  //return 0;
 }

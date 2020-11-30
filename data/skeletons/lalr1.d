@@ -716,39 +716,39 @@ m4_popdef([b4_at_dollar])])dnl
       switch (yycount)
       {
         case  1:
-          text = dgettext("bison-runtime", "syntax error, unexpected %s");
+          text = dgettext("bison", "syntax error, unexpected %s");
           yyformat = to!string(text);
           res = format(yyformat, yystr[0]);
          break;
         case  2:
-          text = dgettext("bison-runtime", "syntax error, unexpected %s, expecting %s");
+          text = dgettext("bison", "syntax error, unexpected %s, expecting %s");
           yyformat = to!string(text);
           res = format(yyformat, yystr[0], yystr[1]);
           break;
         case  3:
-          text = dgettext("bison-runtime", "syntax error, unexpected %s, expecting %s or %s");
+          text = dgettext("bison", "syntax error, unexpected %s, expecting %s or %s");
           yyformat = to!string(text);
           res = format(yyformat, yystr[0], yystr[1], yystr[2]);
           break;
         case  4:
-          text = dgettext("bison-runtime", "syntax error, unexpected %s, expecting %s or %s or %s");
+          text = dgettext("bison", "syntax error, unexpected %s, expecting %s or %s or %s");
           yyformat = to!string(text);
           res = format(yyformat, yystr[0], yystr[1], yystr[2], yystr[3]);
           break;
         case  5:
-          text = dgettext("bison-runtime", "syntax error, unexpected %s, expecting %s or %s or %s or %s");
+          text = dgettext("bison", "syntax error, unexpected %s, expecting %s or %s or %s or %s");
           yyformat = to!string(text);
           res = format(yyformat, yystr[0], yystr[1], yystr[2], yystr[3], yystr[4]);
           break;
         default:
-          text = dgettext("bison-runtime", "syntax error");
+          text = dgettext("bison", "syntax error");
           res = to!string(text);
           break;
       }
       yyerror(]b4_locations_if([yyctx.getLocation(), ])[res);
     }]],
 [[simple]], [[
-    yyerror(]b4_locations_if([yyctx.getLocation(), ])[dgettext("bison-runtime", "syntax error"));]])[
+    yyerror(]b4_locations_if([yyctx.getLocation(), ])[dgettext("bison", "syntax error"));]])[
   }
 
 ]b4_parse_error_bmatch(
