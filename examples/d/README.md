@@ -5,11 +5,22 @@ This directory contains examples of Bison grammar files in D.
 You can run `make` to compile these examples.  And `make clean` to tidy
 afterwards.
 
-## d/simple.y
+## d/simple
 The usual calculator.
 
-## d/calc.y
+## d/calc
 A richer implementation of the calculator, with location tracking.
+
+## d/pushcalc
+All the previous examples are so called "pull parsers": the user invokes the
+parser once, which repeatedly calls the scanner until the input is drained.
+
+This example demonstrates the "push parsers": the user calls the scanner to
+fetch the next token, passes it to the parser, and repeats the operation
+until the input is drained.
+
+This example is a straightforward conversion of the 'calc' example to the
+push-parser model.
 
 <!---
 
