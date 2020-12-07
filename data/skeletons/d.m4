@@ -192,7 +192,12 @@ b4_symbol_foreach([b4_token_enum])dnl
 }
 ])
 
-
+# b4_symbol_translate(STRING)
+# ---------------------------
+# Used by "bison" in the array of symbol names to mark those that
+# require translation.
+m4_define([b4_symbol_translate],
+[[_($1)]])
 
 ## -------------- ##
 ## Symbol kinds.  ##
@@ -243,6 +248,12 @@ m4_define([b4_declare_symbol_enum],
     static immutable string[] yytname_ = @{
   ]b4_tname[
     @};
+]b4_has_translations_if([[
+    /* YYTRANSLATABLE[SYMBOL-NUM] -- Whether YY_SNAME[SYMBOL-NUM] is
+      internationalizable.  */
+    static immutable ]b4_int_type_for([b4_translatable])[[] yytranslatable = @{
+    ]b4_translatable[
+    @};]])[
 
     /* Return YYSTR after stripping away unnecessary quotes and
      backslashes, so that it's suitable for yyerror.  The heuristic is
@@ -252,8 +263,32 @@ m4_define([b4_declare_symbol_enum],
     final void toString(W)(W sink) const
     if (isOutputRange!(W, char))
     {
-      string yystr = yytname_[yycode_];
-
+      string yystr = yytname_[yycode_];]b4_has_translations_if([[
+      if (yystr[0] == '"')
+      {
+        string yyr;
+        strip_quotes:
+          for (int i = 1; i < yystr.length; i++)
+            switch (yystr[i])
+              {
+              case '\'':
+              case ',':
+                break strip_quotes;
+              case '\\':
+                if (yystr[++i] != '\\')
+                  break strip_quotes;
+                goto default;
+              default:
+                yyr ~= yystr[i];
+                break;
+              case '"':
+                yyr = (yycode_ < yyntokens_ && yytranslatable[yycode_] > 0)
+                  ? _(yyr) : yyr;
+                put(sink, yyr);
+                return;
+              }
+        }
+    ]],[[
       if (yystr[0] == '"')
         {
         strip_quotes:
@@ -276,13 +311,16 @@ m4_define([b4_declare_symbol_enum],
                 return;
               }
         }
+    ]])[
       else if (yystr == "$end")
       {
-        put(sink, "end of input");
+        put(sink, _("end of input"));
         return;
       }
 
-      put(sink, yystr);
+      yystr = (yycode_ < yyntokens_ && yytranslatable[yycode_] > 0)
+            ? _(yystr) : yystr;
+      put(sink, _(yystr));
     }
   }
 ]])

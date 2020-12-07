@@ -40,9 +40,28 @@ version(D_Version2) {
 ]b4_user_post_prologue[
 ]b4_percent_code_get([[imports]])[
 import std.format;
+import std.conv;
 
+/**
+ * Handle error message internationalisation
+ */
 extern(C) char* dgettext(const char*, const char*);
-
+string YY_(const char* s)
+{
+  char* res = dgettext("bison-runtime", s);
+  return to!string(res);
+}
+]b4_has_translations_if([
+/**
+ * User error message internationalisation
+ */
+extern(C) char* gettext(const char*);
+string _(string s)
+{
+  char* res = gettext(s.ptr);
+  return to!string(res);
+}
+])[
 /**
  * A Bison parser, automatically generated from <tt>]m4_bpatsubst(b4_file_name, [^"\(.*\)"$], [\1])[</tt>.
  *
@@ -710,45 +729,37 @@ m4_popdef([b4_at_dollar])])dnl
       for (int yyi = 0; yyi < yycount; yyi++)
         yystr[yyi] = format!"%s"(yyarg[yyi]);
       string res, yyformat;
-      char *text;
       import std.string;
-      import std.conv;
       switch (yycount)
       {
         case  1:
-          text = dgettext("bison", "syntax error, unexpected %s");
-          yyformat = to!string(text);
+          yyformat = YY_("syntax error, unexpected %s");
           res = format(yyformat, yystr[0]);
          break;
         case  2:
-          text = dgettext("bison", "syntax error, unexpected %s, expecting %s");
-          yyformat = to!string(text);
+          yyformat = YY_("syntax error, unexpected %s, expecting %s");
           res = format(yyformat, yystr[0], yystr[1]);
           break;
         case  3:
-          text = dgettext("bison", "syntax error, unexpected %s, expecting %s or %s");
-          yyformat = to!string(text);
+          yyformat = YY_("syntax error, unexpected %s, expecting %s or %s");
           res = format(yyformat, yystr[0], yystr[1], yystr[2]);
           break;
         case  4:
-          text = dgettext("bison", "syntax error, unexpected %s, expecting %s or %s or %s");
-          yyformat = to!string(text);
+          yyformat = YY_("syntax error, unexpected %s, expecting %s or %s or %s");
           res = format(yyformat, yystr[0], yystr[1], yystr[2], yystr[3]);
           break;
         case  5:
-          text = dgettext("bison", "syntax error, unexpected %s, expecting %s or %s or %s or %s");
-          yyformat = to!string(text);
+          yyformat = YY_("syntax error, unexpected %s, expecting %s or %s or %s or %s");
           res = format(yyformat, yystr[0], yystr[1], yystr[2], yystr[3], yystr[4]);
           break;
         default:
-          text = dgettext("bison", "syntax error");
-          res = to!string(text);
+          res = YY_("syntax error");
           break;
       }
       yyerror(]b4_locations_if([yyctx.getLocation(), ])[res);
     }]],
 [[simple]], [[
-    yyerror(]b4_locations_if([yyctx.getLocation(), ])[dgettext("bison", "syntax error"));]])[
+    yyerror(]b4_locations_if([yyctx.getLocation(), ])[YY_("syntax error"));]])[
   }
 
 ]b4_parse_error_bmatch(

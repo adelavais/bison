@@ -36,7 +36,7 @@
        LPAR   "("
        RPAR   ")"
        EOL    "end of line"
-%token <ival> NUM "number"
+%token <ival> NUM _("number")
 %type  <ival> exp
 
 %left "-" "+"
