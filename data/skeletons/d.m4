@@ -287,8 +287,7 @@ m4_define([b4_declare_symbol_enum],
                 put(sink, yyr);
                 return;
               }
-        }
-    ]],[[
+        }]],[[
       if (yystr[0] == '"')
         {
         strip_quotes:
@@ -310,17 +309,16 @@ m4_define([b4_declare_symbol_enum],
               case '"':
                 return;
               }
-        }
-    ]])[
+        }]])[
       else if (yystr == "$end")
-      {
-        put(sink, _("end of input"));
+      {]b4_has_translations_if([[
+        put(sink, _("end of input"));]],[[
+        put(sink, "end of input");]])[
         return;
-      }
-
+      }]b4_has_translations_if([[
       yystr = (yycode_ < yyntokens_ && yytranslatable[yycode_] > 0)
-            ? _(yystr) : yystr;
-      put(sink, _(yystr));
+            ? _(yystr) : yystr;]])[
+      put(sink, yystr);
     }
   }
 ]])
