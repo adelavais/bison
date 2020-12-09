@@ -95,6 +95,7 @@ if (isInputRange!R && is(ElementType!R : dchar))
 
   this(R r) { input = r; }
 
+  YYLocation loc;
   YYPosition start;
   YYPosition end;
 
@@ -114,7 +115,7 @@ if (isInputRange!R && is(ElementType!R : dchar))
     return semanticVal_;
   }
 
-  Calc.Symbol yylex()
+  Symbol yylex()
   {
     import std.uni : isWhite, isNumber;
 
@@ -126,8 +127,10 @@ if (isInputRange!R && is(ElementType!R : dchar))
       input.popFront;
     }
 
+    loc = YYLocation(start, end);
+
     if (input.empty)
-      return Calc.Symbol(TokenKind.YYEOF, YYLocation(startPos, endPos));
+      return Symbol(TokenKind.YYEOF, loc);
 
     // Numbers.
     if (input.front.isNumber)
@@ -143,7 +146,8 @@ if (isInputRange!R && is(ElementType!R : dchar))
       }
       start = end;
       end.column += lenChars;
-      return Calc.Symbol(TokenKind.NUM, semanticVal_.ival, YYLocation(startPos, endPos));
+      loc = YYLocation(start, end);
+      return Symbol(TokenKind.NUM, semanticVal_.ival, loc);
     }
 
     // Individual characters
@@ -151,19 +155,21 @@ if (isInputRange!R && is(ElementType!R : dchar))
     input.popFront;
     start = end;
     end.column++;
+    loc = YYLocation(start, end);
     switch (ch)
     {
-      case '+':  return Calc.Symbol(TokenKind.PLUS, YYLocation(startPos, endPos));
-      case '-':  return Calc.Symbol(TokenKind.MINUS, YYLocation(startPos, endPos));
-      case '*':  return Calc.Symbol(TokenKind.STAR, YYLocation(startPos, endPos));
-      case '/':  return Calc.Symbol(TokenKind.SLASH, YYLocation(startPos, endPos));
-      case '(':  return Calc.Symbol(TokenKind.LPAR, YYLocation(startPos, endPos));
-      case ')':  return Calc.Symbol(TokenKind.RPAR, YYLocation(startPos, endPos));
+      case '+':  return Symbol(TokenKind.PLUS, loc);
+      case '-':  return Symbol(TokenKind.MINUS, loc);
+      case '*':  return Symbol(TokenKind.STAR, loc);
+      case '/':  return Symbol(TokenKind.SLASH, loc);
+      case '(':  return Symbol(TokenKind.LPAR, loc);
+      case ')':  return Symbol(TokenKind.RPAR, loc);
       case '\n':
       {
         end.line++;
         end.column = 1;
-        return Calc.Symbol(TokenKind.EOL, YYLocation(startPos, endPos));
+        loc = YYLocation(start, end);
+        return Symbol(TokenKind.EOL, loc);
       }
       default: assert(0);
     }

@@ -95,6 +95,8 @@ public interface Lexer
 ]])[
 }
 
+alias Symbol = ]b4_parser_class[.Symbol;
+
 ]b4_locations_if([b4_position_type_if([[
 static assert(__traits(compiles,
               (new ]b4_position_type[[1])[0]=(new ]b4_position_type[[1])[0]),
@@ -407,9 +409,9 @@ b4_locations_if([, ref ]b4_location_type[ yylocationp])[)
       yycdebugln (message);
     }
   }
-]])
-b4_symbol_type_define
-[
+]])[
+]b4_symbol_type_define[
+
   /**
    * Parse input from the scanner that was specified at object construction
    * time.  Return whether the end of the input was reached successfully.
@@ -493,12 +495,12 @@ m4_popdef([b4_at_dollar])])dnl
           yycdebugln ("Reading a token");]])[
           Symbol yysymbol = yylex();
           yychar = yysymbol.token();
-          yylval = yysymbol.semanticValue();]b4_locations_if([[
+          yylval = yysymbol.value();]b4_locations_if([[
           yylloc = yysymbol.location();]])[
         }
 
         /* Convert token to internal form.  */
-        yytoken = yytranslate_ (yychar);]b4_parse_trace_if([[
+        yytoken = yychar;]b4_parse_trace_if([[
         yy_symbol_print ("Next token is", yytoken, yylval]b4_locations_if([, yylloc])[);]])[
 
         if (yytoken == ]b4_symbol(error, kind)[)
