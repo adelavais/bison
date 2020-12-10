@@ -127,7 +127,7 @@ if (isInputRange!R && is(ElementType!R : dchar))
       input.popFront;
     }
 
-    loc = YYLocation(start, end);
+    loc = locationType(start, end);
 
     if (input.empty)
       return Symbol(TokenKind.YYEOF, loc);

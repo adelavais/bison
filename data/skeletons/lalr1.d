@@ -84,7 +84,7 @@ public interface Lexer
    * @@param loc The location of the element to which the
    *                error message is related]])[
    * @@param s The string for the error message.  */
-   void yyerror (]b4_locations_if([[const ]b4_location_type[ loc, ]])[string s);
+   void yyerror (]b4_locations_if([[const locationType loc, ]])[string s);
 ]b4_parse_error_bmatch([custom], [[
   /**
    * Build and emit a "syntax error" message in a user-defined way.
@@ -94,8 +94,6 @@ public interface Lexer
   void reportSyntaxError(]b4_parser_class[.Context ctx);
 ]])[
 }
-
-alias Symbol = ]b4_parser_class[.Symbol;
 
 ]b4_locations_if([b4_position_type_if([[
 static assert(__traits(compiles,
@@ -126,20 +124,20 @@ public struct ]b4_position_type[ {
   }
 }
 ]])b4_location_type_if([[
-static assert(__traits(compiles, (new ]b4_location_type[((new ]b4_position_type[[1])[0]))) &&
-              __traits(compiles, (new ]b4_location_type[((new ]b4_position_type[[1])[0], (new ]b4_position_type[[1])[0]))),
-              "error: struct/class ]b4_location_type[ must have "
+static assert(__traits(compiles, (new locationType((new ]b4_position_type[[1])[0]))) &&
+              __traits(compiles, (new locationType((new ]b4_position_type[[1])[0], (new ]b4_position_type[[1])[0]))),
+              "error: struct/class locationType must have "
               "default constructor and constructors this(]b4_position_type[) and this(]b4_position_type[, ]b4_position_type[).");
-static assert(__traits(compiles, (new ]b4_location_type[[1])[0].begin=(new ]b4_location_type[[1])[0].begin) &&
-              __traits(compiles, (new ]b4_location_type[[1])[0].begin=(new ]b4_location_type[[1])[0].end) &&
-              __traits(compiles, (new ]b4_location_type[[1])[0].end=(new ]b4_location_type[[1])[0].begin) &&
-              __traits(compiles, (new ]b4_location_type[[1])[0].end=(new ]b4_location_type[[1])[0].end),
-              "error: struct/class ]b4_location_type[ must have assignment-compatible "
+static assert(__traits(compiles, (new locationType[1])[0].begin=(new locationType[1])[0].begin) &&
+              __traits(compiles, (new locationType[1])[0].begin=(new locationType[1])[0].end) &&
+              __traits(compiles, (new locationType[1])[0].end=(new locationType[1])[0].begin) &&
+              __traits(compiles, (new locationType[1])[0].end=(new locationType[1])[0].end),
+              "error: struct/class locationType must have assignment-compatible "
               "members/properties 'begin' and 'end'.");
-static assert(__traits(compiles, (new string[1])[0]=(new ]b4_location_type[[1])[0].toString()),
-              "error: struct/class ]b4_location_type[ must have toString method.");
+static assert(__traits(compiles, (new string[1])[0]=(new locationType[1])[0].toString()),
+              "error: struct/class locationType must have toString method.");
 
-private immutable bool yy_location_is_class = !__traits(compiles, *(new ]b4_location_type[((new ]b4_position_type[[1])[0])));]], [[
+private immutable bool yy_location_is_class = !__traits(compiles, *(new locationType((new ]b4_position_type[[1])[0])));]], [[
 /**
  * A struct defining a pair of positions.  Positions, defined by the
  * <code>]b4_position_type[</code> struct, denote a point in the input.
@@ -196,6 +194,11 @@ b4_user_union_members
 [m4_if(b4_tag_seen_flag, 0,
 [[private alias int YYSemanticType;]])])[
 ]b4_token_enums[
+
+alias Symbol = ]b4_parser_class[.Symbol;
+alias valueType = ]b4_yystype[;]b4_locations_if([[
+alias locationType = ]b4_location_type[;]])[
+
 ]b4_parser_class_declaration[
 {
   ]b4_identification[
@@ -203,18 +206,18 @@ b4_user_union_members
 ]b4_declare_symbol_enum[
 
 ]b4_locations_if([[
-  private final ]b4_location_type[ yylloc_from_stack (ref YYStack rhs, int n)
+  private final locationType yylloc_from_stack (ref YYStack rhs, int n)
   {
     static if (yy_location_is_class) {
       if (n > 0)
-        return new ]b4_location_type[ (rhs.locationAt (n-1).begin, rhs.locationAt (0).end);
+        return new locationType (rhs.locationAt (n-1).begin, rhs.locationAt (0).end);
       else
-        return new ]b4_location_type[ (rhs.locationAt (0).end);
+        return new locationType (rhs.locationAt (0).end);
     } else {
       if (n > 0)
-        return ]b4_location_type[ (rhs.locationAt (n-1).begin, rhs.locationAt (0).end);
+        return locationType (rhs.locationAt (n-1).begin, rhs.locationAt (0).end);
       else
-        return ]b4_location_type[ (rhs.locationAt (0).end);
+        return locationType (rhs.locationAt (0).end);
     }
   }]])[
 
@@ -292,7 +295,7 @@ b4_user_union_members
     return yylexer.yylex ();
   }
 
-  protected final void yyerror (]b4_locations_if([[const ]b4_location_type[ loc, ]])[string s) {
+  protected final void yyerror (]b4_locations_if([[const locationType loc, ]])[string s) {
     yylexer.yyerror (]b4_locations_if([loc, ])[s);
   }
 
@@ -352,7 +355,7 @@ b4_user_union_members
   private int yyaction (int yyn, ref YYStack yystack, int yylen)
   {
     ]b4_yystype[ yyval;]b4_locations_if([[
-    ]b4_location_type[ yyloc = yylloc_from_stack (yystack, yylen);]])[
+    locationType yyloc = yylloc_from_stack (yystack, yylen);]])[
 
     /* If YYLEN is nonzero, implement the default value of the action:
        `$$ = $1'.  Otherwise, use the top of the stack.
@@ -394,7 +397,7 @@ b4_user_union_members
 
   private final void yy_symbol_print (string s, SymbolKind yykind,
     ref ]b4_yystype[ yyvaluep]dnl
-b4_locations_if([, ref ]b4_location_type[ yylocationp])[)
+b4_locations_if([, ref locationType yylocationp])[)
   {
     if (0 < yydebug)
     {
@@ -436,13 +439,13 @@ b4_locations_if([, ref ]b4_location_type[ yylocationp])[)
     /* Error handling.  */
     int yynerrs_ = 0;]b4_locations_if([[
     /// The location where the error started.
-    ]b4_location_type[ yyerrloc;
+    locationType yyerrloc;
 
-    /// ]b4_location_type[ of the lookahead.
-    ]b4_location_type[ yylloc;
+    /// locationType of the lookahead.
+    locationType yylloc;
 
     /// @@$.
-    ]b4_location_type[ yyloc;]])[
+    locationType yyloc;]])[
 
     /// Semantic value of the lookahead.
     ]b4_yystype[ yylval;
@@ -773,9 +776,9 @@ m4_popdef([b4_at_dollar])])dnl
     private ]b4_parser_class[ yyparser;]])[
     private const(YYStack) yystack;
     private SymbolKind yytoken;]b4_locations_if([[
-    private const(]b4_location_type[) yylocation;]])[
+    private const(locationType) yylocation;]])[
 
-    this(]b4_lac_if([[]b4_parser_class[ parser, ]])[YYStack stack, SymbolKind kind]b4_locations_if([[, ]b4_location_type[ loc]])[)
+    this(]b4_lac_if([[]b4_parser_class[ parser, ]])[YYStack stack, SymbolKind kind]b4_locations_if([[, locationType loc]])[)
     {]b4_lac_if([[
         yyparser = parser;]])[
       yystack = stack;
@@ -788,7 +791,7 @@ m4_popdef([b4_at_dollar])])dnl
       return yytoken;
     }]b4_locations_if([[
 
-    final const(]b4_location_type[) getLocation() const
+    final const(locationType) getLocation() const
     {
       return yylocation;
     }]])[
@@ -1108,7 +1111,7 @@ m4_popdef([b4_at_dollar])])dnl
     }
 
     public final void push (int state, ]b4_yystype[ value]dnl
-  b4_locations_if([, ref ]b4_location_type[ loc])[)
+  b4_locations_if([, ref locationType loc])[)
     {
       stack ~= YYStackElement(state, value]b4_locations_if([, loc])[);
     }
@@ -1129,7 +1132,7 @@ m4_popdef([b4_at_dollar])])dnl
     }
 
 ]b4_locations_if([[
-    public final ref ]b4_location_type[ locationAt (int i)
+    public final ref locationType locationAt (int i)
     {
       return stack[$-i-1].location;
     }]])[
