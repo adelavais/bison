@@ -309,7 +309,7 @@ b4_percent_define_default([[api.parser.class]], [b4_prefix[]Parser])])
 m4_define([b4_parser_class], [b4_percent_define_get([[api.parser.class]])])
 
 #b4_percent_define_default([[location_type]], [Location])])
-m4_define([b4_location_type], b4_percent_define_ifdef([[location_type]],[b4_percent_define_get([[location_type]])],[YYLocation]))
+m4_define([b4_location_type], b4_percent_define_ifdef([[location_type]],[b4_percent_define_get([[location_type]])],[Location]))
 
 #b4_percent_define_default([[position_type]], [Position])])
 m4_define([b4_position_type], b4_percent_define_ifdef([[position_type]],[b4_percent_define_get([[position_type]])],[YYPosition]))
@@ -461,15 +461,15 @@ m4_define([b4_symbol_type_define],
   {
     private SymbolKind kind;
     private ]b4_yystype[ value_;]b4_locations_if([[
-    private YYLocation location_;]])[
-    this(TokenKind token]b4_locations_if([[, YYLocation loc]])[)
+    private Location location_;]])[
+    this(TokenKind token]b4_locations_if([[, Location loc]])[)
     {
       kind = yytranslate_(token);]b4_locations_if([
       location_ = loc;])[
     }
     static foreach (member; __traits(allMembers, YYSemanticType))
     {
-      this(TokenKind token, typeof(mixin("YYSemanticType." ~ member)) val]b4_locations_if([[, YYLocation loc]])[)
+      this(TokenKind token, typeof(mixin("YYSemanticType." ~ member)) val]b4_locations_if([[, Location loc]])[)
       {
         kind = yytranslate_(token);
         mixin("value_." ~ member ~ " = val;");]b4_locations_if([
@@ -478,6 +478,6 @@ m4_define([b4_symbol_type_define],
     }
     SymbolKind token() { return kind; }
     ]b4_yystype[ value() { return value_; }]b4_locations_if([[
-    YYLocation location() { return location_; }]])[
+    Location location() { return location_; }]])[
   }
 ]])

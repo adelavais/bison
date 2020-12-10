@@ -95,14 +95,14 @@ if (isInputRange!R && is(ElementType!R : dchar))
 
   this(R r) { input = r; }
 
-  YYLocation loc;
+  Location loc;
   YYPosition start;
   YYPosition end;
 
   // Should be a local in main, shared with %parse-param.
   int exit_status = 0;
 
-  void yyerror(const YYLocation loc, string s)
+  void yyerror(const Location loc, string s)
   {
     exit_status = 1;
     stderr.writeln(loc.toString(), ": ", s);
@@ -146,7 +146,7 @@ if (isInputRange!R && is(ElementType!R : dchar))
       }
       start = end;
       end.column += lenChars;
-      loc = YYLocation(start, end);
+      loc = Location(start, end);
       return Symbol(TokenKind.NUM, semanticVal_.ival, loc);
     }
 
@@ -155,7 +155,7 @@ if (isInputRange!R && is(ElementType!R : dchar))
     input.popFront;
     start = end;
     end.column++;
-    loc = YYLocation(start, end);
+    loc = Location(start, end);
     switch (ch)
     {
       case '+':  return Symbol(TokenKind.PLUS, loc);
@@ -168,7 +168,7 @@ if (isInputRange!R && is(ElementType!R : dchar))
       {
         end.line++;
         end.column = 1;
-        loc = YYLocation(start, end);
+        loc = Location(start, end);
         return Symbol(TokenKind.EOL, loc);
       }
       default: assert(0);
