@@ -97,6 +97,7 @@ if (isInputRange!R && is(ElementType!R : dchar))
 
   YYPosition start;
   YYPosition end;
+  YYLocation location;
 
   // Should be a local in main, shared with %parse-param.
   int exit_status = 0;
@@ -121,13 +122,13 @@ if (isInputRange!R && is(ElementType!R : dchar))
     // Skip initial spaces
     while (!input.empty && input.front != '\n' && isWhite(input.front))
     {
-      start = end;
-      end.column++;
+      location.begin = location.end;
+      location.end.column++;
       input.popFront;
     }
 
     if (input.empty)
-      return Symbol(TokenKind.YYEOF, YYLocation(startPos, endPos));
+      return Symbol(TokenKind.YYEOF, location);
 
     // Numbers.
     if (input.front.isNumber)
@@ -141,29 +142,29 @@ if (isInputRange!R && is(ElementType!R : dchar))
         lenChars++;
         copy.popFront;
       }
-      start = end;
-      end.column += lenChars;
-      return Symbol(TokenKind.NUM, semanticVal_.ival, YYLocation(startPos, endPos));
+      location.begin = location.end;
+      location.end.column += lenChars;
+      return Symbol(TokenKind.NUM, semanticVal_.ival, location);
     }
 
     // Individual characters
     auto ch = input.front;
     input.popFront;
-    start = end;
-    end.column++;
+    location.begin = location.end;
+    location.end.column++;
     switch (ch)
     {
-      case '+':  return Symbol(TokenKind.PLUS, YYLocation(startPos, endPos));
-      case '-':  return Symbol(TokenKind.MINUS, YYLocation(startPos, endPos));
-      case '*':  return Symbol(TokenKind.STAR, YYLocation(startPos, endPos));
-      case '/':  return Symbol(TokenKind.SLASH, YYLocation(startPos, endPos));
-      case '(':  return Symbol(TokenKind.LPAR, YYLocation(startPos, endPos));
-      case ')':  return Symbol(TokenKind.RPAR, YYLocation(startPos, endPos));
+      case '+':  return Symbol(TokenKind.PLUS, location);
+      case '-':  return Symbol(TokenKind.MINUS, location);
+      case '*':  return Symbol(TokenKind.STAR, location);
+      case '/':  return Symbol(TokenKind.SLASH, location);
+      case '(':  return Symbol(TokenKind.LPAR, location);
+      case ')':  return Symbol(TokenKind.RPAR, location);
       case '\n':
       {
-        end.line++;
-        end.column = 1;
-        return Symbol(TokenKind.EOL, YYLocation(startPos, endPos));
+        location.end.line++;
+        location.end.column = 1;
+        return Symbol(TokenKind.EOL, location);
       }
       default: assert(0);
     }
