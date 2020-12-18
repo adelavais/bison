@@ -95,8 +95,8 @@ if (isInputRange!R && is(ElementType!R : dchar))
 
   this(R r) { input = r; }
 
-  YYPosition start;
-  YYPosition end;
+  Position start;
+  Position end;
   Location location;
 
   // Should be a local in main, shared with %parse-param.
@@ -170,12 +170,12 @@ if (isInputRange!R && is(ElementType!R : dchar))
     }
   }
 
-  YYPosition startPos() const
+  Position startPos() const
   {
     return start;
   }
 
-  YYPosition endPos() const
+  Position endPos() const
   {
     return end;
   }
