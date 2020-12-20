@@ -43,14 +43,34 @@ import std.format;
 import std.conv;
 
 /**
- * Handle error message internationalisation
+ * Handle error message internationalisation.
  */
-extern(C) char* dgettext(const char*, const char*);
-string YY_(const char* s)
-{
-  char* res = dgettext("bison-runtime", s);
-  return to!string(res);
+static if (!is(typeof(YY_))) {
+  version(YYENABLE_NLS)
+  {
+    version(ENABLE_NLS)
+    {
+      extern(C) char* dgettext(const char*, const char*);
+      string YY_(const char* s)
+      {
+        return to!string(dgettext("bison-runtime", s));
+      }
+      pragma(msg, "aaaaaaaa");
+    }
+  }
+  static if (!is(typeof(YY_)))
+  {
+    pragma(inline, true)
+    string YY_(string msg) { return msg; }
+  }
 }
+/*
+static if (!is(typeof(N_)))
+{
+    pragma(inline, true)
+    string N_(string msg) { return msg; }
+}
+*/
 ]b4_has_translations_if([
 /**
  * User error message internationalisation

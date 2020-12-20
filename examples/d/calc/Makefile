@@ -4,6 +4,7 @@
 BISON = bison
 DC = dmd
 XSLTPROC = xsltproc
+DCFLAGS = -version=YYENABLE_NLS -version=ENABLE_NLS
 
 all: calc
 

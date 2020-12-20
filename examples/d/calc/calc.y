@@ -163,9 +163,21 @@ if (isInputRange!R && is(ElementType!R : dchar))
     }
   }
 }
-
+  extern(C) char* bindtextdomain(const char* domainname, const char* dirname);
+extern(C) char* textdomain(const char* domainname);
 int main()
 {
+  import core.stdc.locale;
+    // Set up internationalization.
+  setlocale(LC_ALL, "");
+  // Use Bison's standard translation catalogue for error messages
+  // (the generated messages).
+  bindtextdomain("bison-runtime", "/usr/local/share/locale/");
+  // For the translation catalogue of your own project, use the
+  // name of your project.
+  bindtextdomain("bison", "/usr/local/share/locale/");
+  textdomain("bison");
+
   auto l = calcLexer(stdin);
   auto p = new Calc(l);
   p.parse();
