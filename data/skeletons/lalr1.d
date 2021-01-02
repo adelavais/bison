@@ -721,32 +721,29 @@ m4_popdef([b4_at_dollar])])dnl
       immutable int argmax = 5;
       SymbolKind[] yyarg = new SymbolKind[argmax];
       int yycount = yysyntaxErrorArguments(yyctx, yyarg, argmax);
-      string[] yystr = new string[yycount];
-      for (int yyi = 0; yyi < yycount; yyi++)
-        yystr[yyi] = format!"%s"(yyarg[yyi]);
       string res, yyformat;
       import std.string;
       switch (yycount)
       {
         case  1:
           yyformat = YY_("syntax error, unexpected %s");
-          res = format(yyformat, yystr[0]);
+          res = format(yyformat, yyarg[0]);
          break;
         case  2:
           yyformat = YY_("syntax error, unexpected %s, expecting %s");
-          res = format(yyformat, yystr[0], yystr[1]);
+          res = format(yyformat, yyarg[0], yyarg[1]);
           break;
         case  3:
           yyformat = YY_("syntax error, unexpected %s, expecting %s or %s");
-          res = format(yyformat, yystr[0], yystr[1], yystr[2]);
+          res = format(yyformat, yyarg[0], yyarg[1], yyarg[2]);
           break;
         case  4:
           yyformat = YY_("syntax error, unexpected %s, expecting %s or %s or %s");
-          res = format(yyformat, yystr[0], yystr[1], yystr[2], yystr[3]);
+          res = format(yyformat, yyarg[0], yyarg[1], yyarg[2], yyarg[3]);
           break;
         case  5:
           yyformat = YY_("syntax error, unexpected %s, expecting %s or %s or %s or %s");
-          res = format(yyformat, yystr[0], yystr[1], yystr[2], yystr[3], yystr[4]);
+          res = format(yyformat, yyarg[0], yyarg[1], yyarg[2], yyarg[3], yyarg[4]);
           break;
         default:
           res = YY_("syntax error");
