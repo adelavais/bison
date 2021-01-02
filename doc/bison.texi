@@ -13957,8 +13957,9 @@ The internationalization in D is very simmilar to the one in C. The D
 parser uses @code{gettext} for user messages and @code{dgettext} for
 Bison messages.
 
-To enable internationalisation, import @code{bindtextdomain} and @code{textdomain}
-from C:
+To enable internationalisation, compile using
+@code{-version ENABLE_NLS -version YYENABLE_NLS} and import
+@code{bindtextdomain} and @code{textdomain} from C:
 
 @example
 extern(C) char* bindtextdomain(const char* domainname, const char* dirname);
