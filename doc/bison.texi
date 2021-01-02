@@ -13954,12 +13954,10 @@ Identify the Bison version and skeleton used to generate this parser.
 @end deftypecv
 
 The internationalization in D is very simmilar to the one in C. The D
-parser uses gettext for user messages and dgettext for Bison messages.
+parser uses @code{gettext} for user messages and @code{dgettext} for
+Bison messages.
 
-If gettext is not present on your system, install it and re-run Bison's
-configuration.
-
-For enabling internationalisation, import bindtextdomain and textdomain
+To enable internationalisation, import @code{bindtextdomain} and @code{textdomain}
 from C:
 
 @example
@@ -13988,18 +13986,6 @@ int main()
   // usual main content
   ...
 @}
-@end example
-
-String aliases may be marked for internationalization (@pxref{Token
-I18n}):
-
-@example
-%token PLUS   "+"
-       MINUS  "-"
-       STAR   "*"
-       SLASH  "/"
-       EOL    _("end of line")
-%token <ival> NUM _("number")
 @end example
 
 @node D Parser Context Interface

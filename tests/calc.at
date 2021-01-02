@@ -658,11 +658,15 @@ m4_define([_AT_DATA_CALC_Y(d)],
 ]AT_TOKEN_TRANSLATE_IF([[
   static string _(string s)
   {
-    if (s == "end of input")
-      return "end of file";
-    else if (s == "number")
-      return "nombre";
-    return s;
+    switch (s)
+    {
+      case "end of input":
+        return "end of file";
+      case "number":
+        return "nombre";
+      default:
+        return s;
+    }
   }
 ]])[
 }
