@@ -55,7 +55,6 @@ static if (!is(typeof(YY_))) {
       {
         return to!string(dgettext("bison-runtime", s));
       }
-      pragma(msg, "aaaaaaaa");
     }
   }
   static if (!is(typeof(YY_)))
