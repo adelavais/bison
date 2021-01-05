@@ -682,7 +682,7 @@ m4_define([_AT_DATA_CALC_Y(d)],
        STAR   "*"
        SLASH  "/"
        POW    "^"
-       EOL    "\n"
+       EOL    "'\\n'"
        LPAR   "("
        RPAR   ")"
        NOT    "!"

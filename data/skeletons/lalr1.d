@@ -63,13 +63,7 @@ static if (!is(typeof(YY_))) {
     string YY_(string msg) { return msg; }
   }
 }
-/*
-static if (!is(typeof(N_)))
-{
-    pragma(inline, true)
-    string N_(string msg) { return msg; }
-}
-*/
+
 ]b4_has_translations_if([
 /**
  * User error message internationalisation

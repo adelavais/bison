@@ -257,20 +257,19 @@ m4_define([b4_declare_symbol_enum],
     final void toString(W)(W sink) const
     if (isOutputRange!(W, char))
     {
-      static const string[] yy_sname =
-      @{
-    ]b4_symbol_names[
+      immutable string[] yy_sname = @{
+  ]b4_symbol_names[
       @};]b4_has_translations_if([[
       /* YYTRANSLATABLE[SYMBOL-NUM] -- Whether YY_SNAME[SYMBOL-NUM] is
         internationalizable.  */
-      static immutable ]b4_int_type_for([b4_translatable])[[] yytranslatable = @{
-      ]b4_translatable[
+      immutable ]b4_int_type_for([b4_translatable])[[] yytranslatable = @{
+  ]b4_translatable[
       @};
 
-      (yycode_ < yyntokens_ && yytranslatable[yycode_] > 0)
-            ? put(sink, _(yy_sname[yycode_]))
-            : put(sink, yy_sname[yycode_]);
-      return;]],[[
+      if (yycode_ < yyntokens_ && yytranslatable[yycode_] > 0)
+        put(sink, _(yy_sname[yycode_]));
+      else
+        put(sink, yy_sname[yycode_]);]], [[
       string yystr = yytname_[yycode_];
       if (yystr[0] == '"')
         {
