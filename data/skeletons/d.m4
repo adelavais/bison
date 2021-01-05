@@ -292,12 +292,7 @@ m4_define([b4_declare_symbol_enum],
               case '"':
                 return;
               }
-        }
-      else if (yystr == "$end")
-      {
-        put(sink, "end of input");
-        return;
-      }]])[
+        }]])[
     }
   }
 ]])
