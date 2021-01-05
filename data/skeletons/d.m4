@@ -270,29 +270,7 @@ m4_define([b4_declare_symbol_enum],
         put(sink, _(yy_sname[yycode_]));
       else
         put(sink, yy_sname[yycode_]);]], [[
-      string yystr = yytname_[yycode_];
-      if (yystr[0] == '"')
-        {
-        strip_quotes:
-          for (int i = 1; i < yystr.length; i++)
-            switch (yystr[i])
-              {
-              case '\'':
-              case ',':
-                break strip_quotes;
-
-              case '\\':
-                if (yystr[++i] != '\\')
-                  break strip_quotes;
-                goto default;
-              default:
-                put(sink, yystr[i]);
-                break;
-
-              case '"':
-                return;
-              }
-        }]])[
+      put(sink, yy_sname[yycode_]);]])[
     }
   }
 ]])
