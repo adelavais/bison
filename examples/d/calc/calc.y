@@ -184,8 +184,8 @@ int main()
 {
   auto l = calcLexer(stdin);
   auto p = new Calc(l);
-  import core.stdc.stdlib : getenv;
-  if (getenv("YYDEBUG"))
+  import std.process : environment;
+  if (!(environment.get("YYDEBUG") is null))
     p.setDebugLevel(1);
   p.parse();
   return l.exit_status;
