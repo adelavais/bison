@@ -201,12 +201,68 @@ b4_symbol_foreach([b4_token_enum])dnl
 }
 ])
 
+
 # b4_symbol_translate(STRING)
 # ---------------------------
 # Used by "bison" in the array of symbol names to mark those that
 # require translation.
 m4_define([b4_symbol_translate],
 [[_($1)]])
+
+
+# _b4_token_maker_define_types(SYMBOL-NUM)
+# ----------------------------------
+# Declare the union types for SYMBOL-NUM values.  Use at class-level.
+m4_define([_b4_token_maker_define_types],
+[b4_token_visible_if([$1],
+  [b4_symbol_if([$1], [has_type],
+    [       "][b4_symbol([$1], [type])]["],
+    [       "no type"]),
+])])
+
+
+# b4_token_constructor_define
+# ---------------------------
+# Define the overloaded versions of make_symbol for all the value types.
+m4_define([b4_token_constructor_define],
+[    // The field names of the visible tokens from the YYSemanticType union.
+[    immutable string[] tokenKindTypes = @{
+]b4_symbol_foreach([_b4_token_maker_define_types])[     @};
+    /* Implementation of token constructors for each symbol type visible to
+       the user. The tokenKindTypes array provides the information
+
+
+     */
+    static foreach (member; __traits(allMembers, TokenKind))
+      {
+        static if (mixin("TokenKind." ~ member) >= 0)
+        static if (tokenKindTypes[mixin("TokenKind." ~ member)] == "no type")
+        {]b4_locations_if([[
+          mixin("static auto " ~ member ~ " (Location l)
+          {
+            return Symbol(TokenKind." ~ member ~ ", l);
+          }");]], [[
+          mixin("static auto " ~ member ~ "()
+          {
+            return Symbol(TokenKind." ~ member ~ ");
+          }");]])[
+        }
+        else
+        {]b4_locations_if([[
+          mixin("static auto " ~ member ~ "(typeof(YYSemanticType." ~
+            tokenKindTypes[ mixin("TokenKind." ~ member) ] ~ ") v, Location l)
+          {
+            return Symbol(TokenKind." ~ member ~ ", v, l);
+          }");]], [[
+          mixin("static auto " ~ member ~ "(typeof(YYSemanticType." ~
+            tokenKindTypes[ mixin("TokenKind." ~ member) ] ~ ") v)
+          {
+            return Symbol(TokenKind." ~ member ~ ", v);
+          }");]])[
+        }
+      }
+]])
+
 
 ## -------------- ##
 ## Symbol kinds.  ##
@@ -479,5 +535,7 @@ m4_define([b4_symbol_type_define],
     SymbolKind token() { return kind; }
     Value value() { return value_; }]b4_locations_if([[
     Location location() { return location_; }]])[
+
+]b4_token_ctor_if([b4_token_constructor_define])[
   }
 ]])
