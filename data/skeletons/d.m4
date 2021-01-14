@@ -216,8 +216,8 @@ m4_define([b4_symbol_translate],
 m4_define([_b4_token_maker_define_types],
 [b4_token_visible_if([$1],
   [b4_symbol_if([$1], [has_type],
-    [       "][b4_symbol([$1], [type])]["],
-    [       "no type"]),
+    [      "][b4_symbol([$1], [type])]["],
+    [      "no type"]),
 ])])
 
 
@@ -226,17 +226,16 @@ m4_define([_b4_token_maker_define_types],
 # Define the overloaded versions of make_symbol for all the value types.
 m4_define([b4_token_constructor_define],
 [    // The field names of the visible tokens from the YYSemanticType union.
-[    immutable string[] tokenKindTypes = @{
-]b4_symbol_foreach([_b4_token_maker_define_types])[     @};
+[    immutable string[] visibleTokenTypes = @{
+]b4_symbol_foreach([_b4_token_maker_define_types])[    @};
     /* Implementation of token constructors for each symbol type visible to
-       the user. The tokenKindTypes array provides the information
-
-
-     */
+       the user. The visibleTokenTypes array provides the types.
+       The code generates static methods that have the names as the TokenKinds. */
     static foreach (member; __traits(allMembers, TokenKind))
+    {
+      static if (mixin("TokenKind." ~ member) >= 0)
       {
-        static if (mixin("TokenKind." ~ member) >= 0)
-        static if (tokenKindTypes[mixin("TokenKind." ~ member)] == "no type")
+        static if (visibleTokenTypes[mixin("TokenKind." ~ member)] == "no type")
         {]b4_locations_if([[
           mixin("static auto " ~ member ~ " (Location l)
           {
@@ -250,18 +249,18 @@ m4_define([b4_token_constructor_define],
         else
         {]b4_locations_if([[
           mixin("static auto " ~ member ~ "(typeof(YYSemanticType." ~
-            tokenKindTypes[ mixin("TokenKind." ~ member) ] ~ ") v, Location l)
+            visibleTokenTypes[ mixin("TokenKind." ~ member) ] ~ ") v, Location l)
           {
             return Symbol(TokenKind." ~ member ~ ", v, l);
           }");]], [[
           mixin("static auto " ~ member ~ "(typeof(YYSemanticType." ~
-            tokenKindTypes[ mixin("TokenKind." ~ member) ] ~ ") v)
+             visibleTokenTypes[ mixin("TokenKind." ~ member) ] ~ ") v)
           {
             return Symbol(TokenKind." ~ member ~ ", v);
           }");]])[
         }
       }
-]])
+    }]])
 
 
 ## -------------- ##
