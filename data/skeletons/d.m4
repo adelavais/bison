@@ -248,13 +248,13 @@ m4_define([b4_token_constructor_define],
         }
         else
         {]b4_locations_if([[
-          mixin("static auto " ~ member ~ "(typeof(YYSemanticType." ~
-            visibleTokenTypes[ mixin("TokenKind." ~ member) ] ~ ") v, Location l)
+          mixin("static auto " ~ member ~ "(]b4_variant_if(["], [[typeof(YYSemanticType." ~]])[
+            visibleTokenTypes[mixin("TokenKind." ~ member)] ~ ") v, Location l)
           {
             return Symbol(TokenKind." ~ member ~ ", v, l);
           }");]], [[
-          mixin("static auto " ~ member ~ "(typeof(YYSemanticType." ~
-             visibleTokenTypes[ mixin("TokenKind." ~ member) ] ~ ") v)
+          mixin("static auto " ~ member ~ "(]b4_variant_if(["], [[typeof(YYSemanticType." ~]])[
+             visibleTokenTypes[mixin("TokenKind." ~ member)] ~ ") v)
           {
             return Symbol(TokenKind." ~ member ~ ", v);
           }");]])[
