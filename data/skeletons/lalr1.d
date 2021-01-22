@@ -207,9 +207,8 @@ public struct ]b4_location_type[
 private immutable bool yy_location_is_class = false;
 
 ]])])[]b4_value_type_setup[]m4_ifdef([b4_user_union_members], [private union YYSemanticType
-{]b4_union_if([[
-]b4_symbol_foreach([b4_union_define_types])[]],
-[[b4_user_union_members]])[
+{
+b4_user_union_members
 };],
 [m4_if(b4_tag_seen_flag, 0,
 [[private alias int YYSemanticType;]])])[
