@@ -230,6 +230,37 @@ m4_define([_b4_token_maker_define_types],
     [      "void"]),
 ])])
 
+# b4_token_constructor_define
+# ---------------------------
+# Define the overloaded versions of make_symbol for all the value types.
+m4_define([b4_token_constructor_define],
+[[
+    /* Implementation of token constructors for each symbol type visible to
+     * the user. The visibleTokenTypes array provides the types.
+     * The code generates static methods that have the same names as the TokenKinds.
+     */
+    static foreach (member; __traits(allMembers, TokenKind))
+    {
+      static if (mixin("TokenKind." ~ member) >= 0)
+      {
+        static if (visibleTokenTypes[mixin("TokenKind." ~ member)] == "void")
+        {
+          mixin("static auto " ~ member ~ " (]b4_locations_if([[Location l]])[)
+          {
+            return Symbol(TokenKind." ~ member ~ "]b4_locations_if([[, l]])[);
+          }");
+        }
+        else
+        {
+          mixin("static auto " ~ member ~ "(" ~
+            visibleTokenTypes[mixin("TokenKind." ~ member)] ~" v]b4_locations_if([[, Location l]])[)
+          {
+            return Symbol(TokenKind." ~ member ~ ", v]b4_locations_if([[, l]])[);
+          }");
+        }
+      }
+    }]])
+
 ## -------------- ##
 ## Symbol kinds.  ##
 ## -------------- ##
@@ -619,5 +650,6 @@ m4_define([b4_symbol_type_define],
     SymbolKind token() { return kind; }
     Value value() { return value_; }]b4_locations_if([[
     Location location() { return location_; }]])[
+]b4_token_ctor_if([b4_token_constructor_define])[
   }
 ]])
