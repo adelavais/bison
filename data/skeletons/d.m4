@@ -216,18 +216,16 @@ m4_define([b4_symbol_translate],
 m4_define([_b4_token_maker_define_types],
 [b4_token_visible_if([$1],
   [b4_symbol_if([$1], [has_type],
-    [      "][b4_symbol([$1], [type])]["],
+    [      ]b4_union_if([["]b4_symbol([$1], [type])["]],
+                        [[typeof(YYSemanticType.]b4_symbol([$1], [type])[).stringof]]),
     [      "void"]),
 ])])
 
-
-# b4_union_define_types(SYMBOL-NUM)
-# ----------------------------------
-# Declare the union entry for SYMBOL-NUM values.
-m4_define([b4_union_define_types],
+m4_define([_b4_constructor_maker_define_types],
 [b4_token_visible_if([$1],
   [b4_symbol_if([$1], [has_type],
-    [  ][b4_symbol([$1], [type])][ ][b4_symbol([$1], [id])][;], [dnl])
+    [[            case TokenKind.]b4_symbol([$1], [id])[: value_.]b4_union_if([b4_symbol([$1], [id])], [b4_symbol([$1], [type])])[ = val;
+                                break;]], [dnl])
 ])])
 
 
@@ -235,8 +233,7 @@ m4_define([b4_union_define_types],
 # ---------------------------
 # Define the overloaded versions of make_symbol for all the value types.
 m4_define([b4_token_constructor_define],
-[[    immutable string[] visibleTokenTypes = @{
-]b4_symbol_foreach([_b4_token_maker_define_types])[    @};
+[[
     /* Implementation of token constructors for each symbol type visible to
        the user. The visibleTokenTypes array provides the types.
        The code generates static methods that have the names as the TokenKinds. */
@@ -257,12 +254,12 @@ m4_define([b4_token_constructor_define],
         }
         else
         {]b4_locations_if([[
-          mixin("static auto " ~ member ~ "(]b4_union_if([[]], [[typeof(YYSemanticType.]])[" ~
+          mixin("static auto " ~ member ~ "(" ~
             visibleTokenTypes[mixin("TokenKind." ~ member)] ~ " v, Location l)
           {
             return Symbol(TokenKind." ~ member ~ ", v, l);
           }");]], [[
-          mixin("static auto " ~ member ~ "(]b4_union_if([[]], [[typeof(YYSemanticType.]])[" ~
+          mixin("static auto " ~ member ~ "(" ~
              visibleTokenTypes[mixin("TokenKind." ~ member)] ~ " v)
           {
             return Symbol(TokenKind." ~ member ~ ", v);
@@ -448,7 +445,7 @@ m4_case(b4_percent_define_get([[api.value.type]]),
 # Check if api.value.type is properly defined, and possibly prepare
 # its use.
 b4_define_silent([b4_value_type_setup],
-[m4_errprintn(Here)
+[
 # Define default value.
 b4_percent_define_ifdef([[api.value.type]], [],
 [# %union => api.value.type=union-directive
@@ -468,7 +465,6 @@ m4_bmatch(b4_percent_define_get_kind([[api.value.type]]),
    [keyword], [_b4_value_type_setup_keyword])
 ])
 
-m4_errprintn(Here1)
 
 ## ----------------- ##
 ## Semantic Values.  ##
@@ -635,13 +631,27 @@ m4_define([b4_symbol_type_define],
       kind = yytranslate_(token);]b4_locations_if([
       location_ = loc;])[
     }
-    static foreach (member; __traits(allMembers, YYSemanticType))
+
+    private immutable string[] visibleTokenTypes = @{
+]b4_symbol_foreach([_b4_token_maker_define_types])[    @};
+
+    // Avoid duplicate constructors by using an associative array.
+    import std.array : assocArray;
+    import std.range : repeat;
+    static foreach (type, _; assocArray(visibleTokenTypes, true.repeat))
     {
-      this(TokenKind token, typeof(mixin("YYSemanticType." ~ member)) val]b4_locations_if([[, Location loc]])[)
+      static if (type != "void")
       {
-        kind = yytranslate_(token);
-        mixin("value_." ~ member ~ " = val;");]b4_locations_if([
-        location_ = loc;])[
+        this(TokenKind token, mixin(type) val]b4_locations_if([[, Location loc]])[)
+        {
+          kind = yytranslate_(token);
+          switch (token)
+          {
+]b4_symbol_foreach([_b4_constructor_maker_define_types])[
+            default: assert(0);
+          }]b4_locations_if([
+          location_ = loc;])[
+        }
       }
     }
     SymbolKind token() { return kind; }
