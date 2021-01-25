@@ -208,6 +208,26 @@ b4_symbol_foreach([b4_token_enum])dnl
 m4_define([b4_symbol_translate],
 [[_($1)]])
 
+# _b4_constructor_maker_define_types(SYMBOL-NUM)
+# ----------------------------------
+# Declare the case branches in the Symbol constructor for SYMBOL-NUM values.
+m4_define([_b4_constructor_maker_define_types],
+[b4_token_visible_if([$1],
+  [b4_symbol_if([$1], [has_type],
+    [[            case TokenKind.]b4_symbol([$1], [id])[: value_.]b4_symbol([$1], [type])[ = val;
+                                break;]], [dnl])
+])])
+
+# _b4_token_maker_define_types(SYMBOL-NUM)
+# ----------------------------------
+# Declare the types for SYMBOL-NUM values.
+m4_define([_b4_token_maker_define_types],
+[b4_token_visible_if([$1],
+  [b4_symbol_if([$1], [has_type],
+    [      typeof(YYSemanticType.]b4_symbol([$1], [type])[).stringof],
+    [      "void"]),
+])])
+
 ## -------------- ##
 ## Symbol kinds.  ##
 ## -------------- ##
@@ -467,13 +487,28 @@ m4_define([b4_symbol_type_define],
       kind = yytranslate_(token);]b4_locations_if([
       location_ = loc;])[
     }
-    static foreach (member; __traits(allMembers, YYSemanticType))
+
+    // The types of TokenKinds' corresponding semantic values.
+    private immutable string[] visibleTokenTypes = @{
+]b4_symbol_foreach([_b4_token_maker_define_types])[    @};
+
+    // Avoid duplicate constructors by using an associative array.
+    import std.array : assocArray;
+    import std.range : repeat;
+    static foreach (type, _; assocArray(visibleTokenTypes, true.repeat))
     {
-      this(TokenKind token, typeof(mixin("YYSemanticType." ~ member)) val]b4_locations_if([[, Location loc]])[)
+      static if (type != "void")
       {
-        kind = yytranslate_(token);
-        mixin("value_." ~ member ~ " = val;");]b4_locations_if([
-        location_ = loc;])[
+        this(TokenKind token, mixin(type) val]b4_locations_if([[, Location loc]])[)
+        {
+          kind = yytranslate_(token);
+          switch (token)
+          {
+]b4_symbol_foreach([_b4_constructor_maker_define_types])[
+            default: assert(0);
+          }]b4_locations_if([
+          location_ = loc;])[
+        }
       }
     }
     SymbolKind token() { return kind; }
