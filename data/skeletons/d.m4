@@ -214,9 +214,12 @@ m4_define([b4_symbol_translate],
 m4_define([_b4_constructor_maker_define_types],
 [b4_token_visible_if([$1],
   [b4_symbol_if([$1], [has_type],
-    [[            case TokenKind.]b4_symbol([$1], [id])[: value_.]dnl
-b4_union_if([b4_symbol([$1], [id])], [b4_symbol([$1], [type])])[ = val;
-                                break;]], [dnl])
+[[            ]dnl
+[static if (__traits(compiles, value_.]dnl
+b4_union_if([b4_symbol([$1], [id])], [b4_symbol([$1], [type])])[ = val))]
+[              ]dnl
+[case TokenKind.]b4_symbol([$1], [id])[: value_.]dnl
+b4_union_if([b4_symbol([$1], [id])], [b4_symbol([$1], [type])])[ = val; break;]], [dnl])
 ])])
 
 # _b4_token_maker_define_types(SYMBOL-NUM)
@@ -625,7 +628,7 @@ m4_define([b4_symbol_type_define],
     }
 
     // The types of TokenKinds' corresponding semantic values.
-    private immutable string[] visibleTokenTypes = @{
+    private static immutable string[] visibleTokenTypes = @{
 ]b4_symbol_foreach([_b4_token_maker_define_types])[    @};
 
     // Avoid duplicate constructors by using an associative array.
