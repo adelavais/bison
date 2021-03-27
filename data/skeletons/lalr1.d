@@ -58,8 +58,8 @@ b4_use_push_for_pull_if([
 # allows them to be defined either in parse() when doing pull parsing,
 # or as class instance variable when doing push parsing.
 m4_define([b4_define_state],
-[[    // Lookahead symbol kind.
-    SymbolKind yytoken = ]b4_symbol(empty, kind)[;
+[[  // Lookahead symbol kind.
+  SymbolKind yytoken = ]b4_symbol(empty, kind)[;
 
   /* State.  */
   int yyn = 0;
@@ -416,7 +416,7 @@ b4_user_union_members
     yyerrstatus_ = 0;
   }
 
-]b4_push_if([b4_define_state])[
+]b4_define_state[
 
   /**
    * Whether error recovery is being done.  In this state, the parser
@@ -515,7 +515,6 @@ b4_user_union_members
    */
   public bool parse()]])[
   {
-]b4_push_if([],[b4_define_state])[
     /* Error handling.  */]b4_locations_if([[
     /// @@$.
     Location yyloc;]])[
