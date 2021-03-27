@@ -505,7 +505,7 @@ b4_user_union_members
    *
    * @@return <tt>YYACCEPT, YYABORT, YYPUSH_MORE</tt>
    */
-  public int yyPushParse(Symbol yyla)]], [[
+  public int pushParse(Symbol yyla)]], [[
   /**
    * Parse input from the scanner that was specified at object construction
    * time.  Return whether the end of the input was reached successfully.
@@ -848,7 +848,7 @@ m4_popdef([b4_at_dollar])])dnl
   {
     int status = 0;
     do {
-      status = this.yyPushParse(yylex());
+      status = this.pushParse(yylex());
     } while (status == YYPUSH_MORE);
     return status == YYACCEPT;
   }]])[

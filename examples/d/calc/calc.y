@@ -184,7 +184,7 @@ int main()
     p.setDebugLevel(1);
   int status;
   do {
-    status = p.yyPushParse(l.yylex());
+    status = p.pushParse(l.yylex());
   } while (status == PUSH_MORE);
   return l.exit_status;
 }
