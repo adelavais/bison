@@ -15082,7 +15082,7 @@ individual rules.
 
 Later versions of Bison added many more new features.
 
-Bison error reporting has been improved in various ways. Notably. ancestral
+Bison error reporting has been improved in various ways. Notably, ancestral
 Yacc and Byson did not have carets in error messages.
 
 Compared to Yacc Bison uses a faster but less space-efficient encoding for
