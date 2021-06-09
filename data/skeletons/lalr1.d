@@ -947,7 +947,7 @@ m4_popdef([b4_at_dollar])])dnl
 
     this(]b4_lac_if([[]b4_parser_class[ parser, ]])[YYStack stack, SymbolKind kind]b4_locations_if([[, Location loc]])[)
     {]b4_lac_if([[
-        yyparser = parser;]])[
+      yyparser = parser;]])[
       yystack = stack;
       yytoken = kind;]b4_locations_if([[
       yylocation = loc;]])[

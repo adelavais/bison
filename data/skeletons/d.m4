@@ -587,7 +587,7 @@ m4_define([b4_basic_symbol_constructor_define],
 [b4_token_visible_if([$1],
 [    this(TokenKind token]b4_symbol_if([$1], [has_type],
 [[, ]b4_union_if([], [[typeof(YYSemanticType.]])b4_symbol([$1], [type])dnl
-[]b4_union_if([], [[) ]])[ val]])[]b4_locations_if([[, Location loc]])[)
+[]b4_union_if([], [[)]])[ val]])[]b4_locations_if([[, Location loc]])[)
     {
       kind = yytranslate_(token);]b4_union_if([b4_symbol_if([$1], [has_type], [[
       static foreach (member; __traits(allMembers, YYSemanticType))
