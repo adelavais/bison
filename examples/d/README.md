@@ -9,7 +9,8 @@ afterwards.
 The usual calculator.
 
 ## d/calc.y
-A richer implementation of the calculator, with location tracking.
+A richer implementation of the calculator, with location tracking, debug
+traces, a push parser and token constructors.
 
 <!---
 
