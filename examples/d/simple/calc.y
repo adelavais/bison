@@ -50,7 +50,7 @@ input:
 
 line:
   EOL
-| exp EOL           { writeln ($exp); }
+| exp EOL           { writeln($exp); }
 | error EOL         { yyerrok(); }
 ;
 
